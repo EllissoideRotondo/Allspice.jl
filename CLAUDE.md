@@ -12,6 +12,6 @@ Use the skills whenever you change an exported name, a docstring, the README, th
 Commands:
 
 ```sh
-julia --startup-file=no --threads=8 test/parallel.jl [group ...]     # tests, 8 processes
+julia --startup-file=no test/parallel.jl [group ...]     # tests
 julia --project=docs docs/make.jl                                    # manual and doctests
 ```

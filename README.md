@@ -113,10 +113,10 @@ Publications that use SPICE should cite the references requested by NAIF:
 
 Report defects and ask questions in the
 [issues of the repository](https://github.com/Orbitology/Almanac.jl/issues). Run the
-tests from the repository root, on 8 processes:
+tests from the repository root:
 
 ```sh
-julia --startup-file=no --threads=8 test/parallel.jl
+julia --startup-file=no test/parallel.jl
 ```
 
 Build the manual, then open `docs/build/index.html`:
