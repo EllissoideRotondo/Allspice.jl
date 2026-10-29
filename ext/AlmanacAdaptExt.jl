@@ -1,6 +1,6 @@
-module AllspiceAdaptExt
+module AlmanacAdaptExt
 
-using Allspice: EphemerisTable, RotationTable
+using Almanac: EphemerisTable, RotationTable
 import Adapt
 
 # Move the coefficient array of an ephemeris table to another array type and keep the

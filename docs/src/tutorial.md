@@ -3,7 +3,7 @@
 This page goes through one complete session: it loads kernels, converts a time, asks for a state and a rotation, finds the point of the Earth below a spacecraft, and searches for the times of perigee. Each call has the name that it has in CSPICE, without the `_c` suffix and with `!` for a call that changes its argument.
 
 ```@setup first
-using Allspice
+using Almanac
 include(joinpath(@__DIR__, "..", "fixture.jl"))
 kernels = DocKernels.write(mktempdir())
 ```
@@ -13,7 +13,7 @@ kernels = DocKernels.write(mktempdir())
 A kernel is a file of data: an SPK holds trajectories in segments, each of which gives one body relative to a center over an interval of time, and a text kernel holds constants such as leap seconds and body radii. [`furnsh`](@ref) loads a kernel of any kind, and [`ktotal`](@ref) counts the loaded kernels of one kind or of all kinds. In the block below, `kernels` is a vector of three paths.
 
 ```@example first
-using Allspice
+using Almanac
 
 foreach(furnsh, kernels)      # leap seconds, constants of the Sun and the Earth, an SPK
 ktotal("ALL")

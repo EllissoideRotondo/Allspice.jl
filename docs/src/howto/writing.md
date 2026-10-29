@@ -9,7 +9,7 @@ The package writes SPK, CK, binary PCK, DSK and EK files, and each file is equal
 The segment below is of type 5, which holds states and interpolates between them with two-body motion, so that a few states for each revolution are enough. [`conics`](@ref) computes the states from orbital elements.
 
 ```@example write
-using Allspice
+using Almanac
 
 mu = 3.986004418e5                           # km^3/s^2
 t0, t1 = 0.0, 86400.0                        # seconds past J2000 TDB

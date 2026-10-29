@@ -1,8 +1,8 @@
 # Internal contract
 
-This file records, for the maintainers of Allspice.jl, the interfaces between its source
+This file records, for the maintainers of Almanac.jl, the interfaces between its source
 files: the signatures below are what other files rely on, and everything else inside a
-file can change without notice. `src/types.jl` and `src/Allspice.jl` define the shared
+file can change without notice. `src/types.jl` and `src/Almanac.jl` define the shared
 types and the include order, and the sections below follow that order, so a file uses
 only the files of the sections before it.
 
@@ -773,7 +773,7 @@ decreasing".
 - Thread safety: a search reads the snapshot once, at its start, so many searches can
   run at the same time and a `furnsh` on another thread does not disturb them.
 
-## `table.jl`, `ext/AllspiceAdaptExt.jl`, `ext/AllspiceForwardDiffExt.jl`
+## `table.jl`, `ext/AlmanacAdaptExt.jl`, `ext/AlmanacForwardDiffExt.jl`
 
 An ephemeris table holds the position of one body relative to another on a fixed
 interval of time, as one flat array of Chebyshev coefficients on intervals of equal
@@ -799,8 +799,8 @@ length. A query needs no kernel set, so it suits the inner loop of an optimizer.
   orthogonal again.
 - `_tab_fit(f, start, dt, nint, ncoef, Val(C))` fits a function of `3C` components and
   `_tab_refine(...)` doubles the number of intervals; both table types use them.
-- `AllspiceAdaptExt` defines `Adapt.adapt_structure` for both table types, which
-  moves `coef` to another array type. `AllspiceForwardDiffExt` adds methods for a
+- `AlmanacAdaptExt` defines `Adapt.adapt_structure` for both table types, which
+  moves `coef` to another array type. `AlmanacForwardDiffExt` adds methods for a
   dual-number epoch to `primal`, `spk_jet`, `frame_rotation`, `frame_jet`, `abcorr_jet`,
   `abcorr_position`, `abcorr_state`, `_ad_order` and `_with_primal`: a query takes the
   jet at the plain epoch and assembles the dual result by the chain rule, so the
@@ -856,10 +856,10 @@ SPICE.jl from a spawned task.
 | Item | File | Rule |
 |---|---|---|
 | Groups | `test/runtests.jl` | `GROUPS` lists 50 names; group `g` is the file `test/test_g.jl`. Run with `julia --startup-file=no --threads=8 --project=test test/runtests.jl [groups]`; an unknown name is an error. |
-| Several processes | `test/parallel.jl` | `julia --startup-file=no --threads=8 test/parallel.jl [groups]`; `ALLSPICE_TEST_JOBS` processes (default a quarter of the CPU threads, 8 at most), balanced with the times of the last run in `test/.group_seconds`; exit status 1 if a process failed. |
-| Exhaustive tier | `test/helpers.jl` | `ALLSPICE_TEST_FULL=1` sets `FULL`; `nsample(fast, full)` gives `fast` in the default run and `full` in the exhaustive run, and requires `0 <= fast <= full`. |
-| Seed | `test/helpers.jl` | `ALLSPICE_TEST_SEED` sets `SEED` (default 20261011), the seed of every random sample. |
-| Kernels | `test/kernels.jl` | `fetch_kernels` downloads the missing kernels into `test/data/`, with three attempts for each URL, and checks their SHA-256; `ALLSPICE_KERNEL_DIR`, `ALLSPICE_DE440S`, `ALLSPICE_DE430` override the paths and `ALLSPICE_DOWNLOAD_KERNELS=0` turns the download off. A group whose kernels are missing is skipped with a visible notice, or fails with `ALLSPICE_REQUIRE_KERNELS=1`. |
+| Several processes | `test/parallel.jl` | `julia --startup-file=no --threads=8 test/parallel.jl [groups]`; `ALMANAC_TEST_JOBS` processes (default a quarter of the CPU threads, 8 at most), balanced with the times of the last run in `test/.group_seconds`; exit status 1 if a process failed. |
+| Exhaustive tier | `test/helpers.jl` | `ALMANAC_TEST_FULL=1` sets `FULL`; `nsample(fast, full)` gives `fast` in the default run and `full` in the exhaustive run, and requires `0 <= fast <= full`. |
+| Seed | `test/helpers.jl` | `ALMANAC_TEST_SEED` sets `SEED` (default 20261011), the seed of every random sample. |
+| Kernels | `test/kernels.jl` | `fetch_kernels` downloads the missing kernels into `test/data/`, with three attempts for each URL, and checks their SHA-256; `ALMANAC_KERNEL_DIR`, `ALMANAC_DE440S`, `ALMANAC_DE430` override the paths and `ALMANAC_DOWNLOAD_KERNELS=0` turns the download off. A group whose kernels are missing is skipped with a visible notice, or fails with `ALMANAC_REQUIRE_KERNELS=1`. |
 | Coverage | `test/coverage_summary.jl` | Run the tests with `--code-coverage=@src`, then `julia --startup-file=no test/coverage_summary.jl [--keep] [output file]`; it adds the `.cov` files of all processes, prints one line for each file of `src/` and `ext/` and the total, and deletes the `.cov` files unless `--keep` is given. |
 
 - Time budget: the default run of all groups together has a budget of 120 s, and

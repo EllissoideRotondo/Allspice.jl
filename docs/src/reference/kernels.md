@@ -8,7 +8,7 @@ default_context
 SpiceError
 SpiceKindError
 SpkInsufficientDataError
-Allspice.ERROR_KINDS
+Almanac.ERROR_KINDS
 ```
 
 ## Loading and inspecting kernels

@@ -1,4 +1,4 @@
-module Allspice
+module Almanac
 
 using StaticArrays
 using Mmap

@@ -3,11 +3,11 @@
 # The kernels are NAIF generic kernels. `fetch_kernels` downloads
 # the missing ones into `test/data/` (not under version control) and checks their
 # SHA-256. Environment variables:
-#   ALLSPICE_KERNEL_DIR        directory of the text kernels and the binary PCK
-#   ALLSPICE_DE440S            path of de440s.bsp
-#   ALLSPICE_DE430             path of de430.bsp
-#   ALLSPICE_DOWNLOAD_KERNELS  0: do not download
-#   ALLSPICE_REQUIRE_KERNELS   1: a group whose kernels are missing fails instead of
+#   ALMANAC_KERNEL_DIR        directory of the text kernels and the binary PCK
+#   ALMANAC_DE440S            path of de440s.bsp
+#   ALMANAC_DE430             path of de430.bsp
+#   ALMANAC_DOWNLOAD_KERNELS  0: do not download
+#   ALMANAC_REQUIRE_KERNELS   1: a group whose kernels are missing fails instead of
 #                              being skipped
 #
 # A test group names the kernels that it needs; `missing_kernels` gives the ones that
@@ -17,10 +17,10 @@ module Kernels
 
 import Downloads, SHA
 
-const DIR = get(ENV, "ALLSPICE_KERNEL_DIR", joinpath(@__DIR__, "data"))
+const DIR = get(ENV, "ALMANAC_KERNEL_DIR", joinpath(@__DIR__, "data"))
 
-const DE440S = get(ENV, "ALLSPICE_DE440S", joinpath(DIR, "de440s.bsp"))
-const DE430 = get(ENV, "ALLSPICE_DE430", joinpath(DIR, "de430.bsp"))
+const DE440S = get(ENV, "ALMANAC_DE440S", joinpath(DIR, "de440s.bsp"))
+const DE430 = get(ENV, "ALMANAC_DE430", joinpath(DIR, "de430.bsp"))
 const LSK = joinpath(DIR, "naif0012.tls")
 const PCK11 = joinpath(DIR, "pck00011.tpc")
 const PCK10 = joinpath(DIR, "pck00010.tpc")
@@ -30,8 +30,8 @@ const MOON_TF_OLD = joinpath(DIR, "moon_080317.tf")
 "Optional kernel with `BODY<id>_GM`; the GM checks are skipped if it is absent."
 const GM_TPC = joinpath(DIR, "gm_de431.tpc")
 
-"True if a group whose kernels are missing must fail (ALLSPICE_REQUIRE_KERNELS=1)."
-const REQUIRED = get(ENV, "ALLSPICE_REQUIRE_KERNELS", "0") == "1"
+"True if a group whose kernels are missing must fail (ALMANAC_REQUIRE_KERNELS=1)."
+const REQUIRED = get(ENV, "ALMANAC_REQUIRE_KERNELS", "0") == "1"
 
 const NAIF = "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/"
 
@@ -92,14 +92,14 @@ all_kernels() = String[LSK, PCK11, PCK10, MOON_BPC, MOON_TF, MOON_TF_OLD, GM_TPC
     fetch_kernels(io = stdout) -> Vector{String}
 
 Download each kernel of [`all_kernels`](@ref) that is not on disk and whose file name
-is in `SOURCES`, unless ALLSPICE_DOWNLOAD_KERNELS=0, and return the paths that are
+is in `SOURCES`, unless ALMANAC_DOWNLOAD_KERNELS=0, and return the paths that are
 still missing. Each URL of a kernel gets three attempts (see `download_any`). A download goes to a temporary file in the target directory and is
 moved into place after its SHA-256 is checked, so that processes that fetch at the same
 time never see a partial file. A failed download is reported on `io` and leaves the
 kernel missing; a file with the wrong SHA-256 is deleted and throws an error.
 """
 function fetch_kernels(io::IO=stdout)
-    get(ENV, "ALLSPICE_DOWNLOAD_KERNELS", "1") == "0" && return missing_kernels(all_kernels()...)
+    get(ENV, "ALMANAC_DOWNLOAD_KERNELS", "1") == "0" && return missing_kernels(all_kernels()...)
     for path in all_kernels()     # invariant: the kernels before `path` were fetched or reported
         (isfile(path) || !haskey(SOURCES, basename(path))) && continue
         urls, sha = SOURCES[basename(path)]

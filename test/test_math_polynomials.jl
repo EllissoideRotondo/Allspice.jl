@@ -169,12 +169,12 @@ group("20. math: polynomials and interpolation") do
         @test g ≈ [lgrint(xs, Float64.(1:4 .== i), 1.7) for i in 1:4] rtol = 1e-14
         yd = [1.0, 0.5, -2.0, 1.0, 0.5, 0.0, 3.0, -1.0]
         @test ForwardDiff.derivative(x -> hrmint(xs, yd, x)[1], 1.7) ≈ hrmint(xs, yd, 1.7)[2] rtol = 1e-13
-        tt = Allspice.taylor_var(1.7, Val(2))
+        tt = Almanac.taylor_var(1.7, Val(2))
         p = lgrind(xs, ys, tt)[1]
-        @test Allspice.derivatives(p)[2] ≈ lgrind(xs, ys, 1.7)[2] rtol = 1e-14
+        @test Almanac.derivatives(p)[2] ≈ lgrind(xs, ys, 1.7)[2] rtol = 1e-14
         cp, x2s = [0.3, -1.2, 0.8, 0.25], [2.0, 3.0]
         q = chbval(cp, x2s, tt)
-        @test collect(Allspice.derivatives(q)) ≈ chbder(cp, x2s, 1.7, 2) rtol = 1e-14
+        @test collect(Almanac.derivatives(q)) ≈ chbder(cp, x2s, 1.7, 2) rtol = 1e-14
         @test ForwardDiff.derivative(x -> rquad(1.0, -x, 2.0)[1][1], 3.0) ≈ (1 + 3 / sqrt(1.0)) / 2 rtol = 1e-14
     end
 

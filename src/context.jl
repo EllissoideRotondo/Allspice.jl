@@ -213,7 +213,7 @@ that stay, so direct edits of the pool ([`pdpool`](@ref), ...) are lost, as in C
 The kernels that stay are not read from disk again.
 
 A binary kernel stays memory-mapped after the call until the garbage collector frees
-every snapshot that holds it (the value of `Allspice.kernelset(ctx)`, which a query
+every snapshot that holds it (the value of `Almanac.kernelset(ctx)`, which a query
 reads once). On Windows the file cannot be deleted or replaced while it is mapped;
 `GC.gc()` removes the map when no task refers to such a snapshot.
 

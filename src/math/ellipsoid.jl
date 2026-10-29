@@ -535,7 +535,7 @@ altitude of `positn` above the ellipsoid, as `nearpt_c` of CSPICE.
 The ellipsoid has the semi-axes `a`, `b`, `c`. `alt` is negative for a point inside.
 The results have the unit of the arguments.
 
-The arguments can be `ForwardDiff.Dual` or `Allspice.Taylor` numbers (the truncated
+The arguments can be `ForwardDiff.Dual` or `Almanac.Taylor` numbers (the truncated
 Taylor series of [`spkder`](@ref)). The value is then equal to the `Float64` result.
 The derivatives are zero at the center and at an interior point whose nearest point is
 not unique.

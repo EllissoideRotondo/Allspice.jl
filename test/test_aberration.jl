@@ -19,8 +19,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -144,7 +144,7 @@ group("9. aberration corrections", Kernels.FULL_SET_FILES...) do
         @test throws_kind(() -> spkpos(ctx, 301, 0.0, "J2000", "RL+S", 399), :spkinvalidoption)
         @test throws_kind(() -> spkder(ctx, 301, 0.0, "J2000", "RL+S", 399, Val(1)), :invalidoption)
         # CSPICE keeps the first five non-blank characters only, so it reads "XLT+SX"
-        # as "XLT+S". Allspice does not truncate: the value is an error.
+        # as "XLT+S". Almanac does not truncate: the value is an error.
         @test SPICE.spkezr("301", 0.0, "J2000", "XLT+SX", "399")[2] > 0
         @test throws_kind(() -> Aberration("XLT+SX"), :invalidoption)
     end
@@ -179,7 +179,7 @@ group("9. aberration corrections", Kernels.FULL_SET_FILES...) do
             @test spkezr(ctx, "MOON", et, ref, ab, "SUN") == byid
             @test spkezr(ctx, 301, et, ref, Aberration(ab), 10) == byid
             @test spkezr(ctx, 301, et, ref, " " * lowercase(ab), 10) == byid
-            @test spkezr(Allspice.kernelset(ctx), 301, et, ref, ab, 10) == byid
+            @test spkezr(Almanac.kernelset(ctx), 301, et, ref, ab, 10) == byid
             pos, lt = spkpos(ctx, 301, et, ref, ab, 10)
             @test pos isa SVector{3,Float64}
             @test spkpos(ctx, "MOON", et, ref, Aberration(ab), "SUN") == (pos, lt)
@@ -426,7 +426,7 @@ group("9. aberration corrections", Kernels.FULL_SET_FILES...) do
             @test ab_warm(ab_alloc_acs, ctx, et, ab) == 0
             @test ab_warm(ab_alloc_apo, ctx, et, ab, st) == 0
         end
-        ks = Allspice.kernelset(ctx)
+        ks = Almanac.kernelset(ctx)
         for ref in (1, refs[3]), ab in ("LT", "XCN+S")
             @test (@inferred spkezr(ks, 301, et, ref, ab, 399)) isa Tuple{SVector{6,Float64},Float64}
             @test (@inferred spkpos(ks, 301, et, ref, ab, 399)) isa Tuple{SVector{3,Float64},Float64}

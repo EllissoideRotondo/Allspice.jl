@@ -3,7 +3,7 @@
 #
 #     julia --project=docs docs/reference_text.jl <output directory>
 
-using Allspice, Markdown, REPL
+using Almanac, Markdown, REPL
 
 function reference_text(outdir::AbstractString)
     src = joinpath(@__DIR__, "src", "reference")
@@ -19,7 +19,7 @@ function reference_text(outdir::AbstractString)
             elseif inblock
                 name = strip(line)
                 isempty(name) && continue
-                binding = Docs.Binding(Allspice, Symbol(replace(name, "Allspice." => "")))
+                binding = Docs.Binding(Almanac, Symbol(replace(name, "Almanac." => "")))
                 println(io, "---\n\n### `", name, "`\n\n", Markdown.plain(Docs.doc(binding)), "\n")
             else
                 println(io, line)

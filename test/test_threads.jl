@@ -1,6 +1,6 @@
 # Group 7: thread safety by immutable snapshots.
 #
-# CSPICE is not called in this group: the reference answers come from Allspice itself,
+# CSPICE is not called in this group: the reference answers come from Almanac itself,
 # computed serially before any task starts.
 #
 # The writer task cycles one context through four load lists:
@@ -18,8 +18,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 

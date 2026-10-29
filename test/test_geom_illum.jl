@@ -23,7 +23,7 @@ ill_alloc_sep(ks, et, c) = @allocated trgsep(ks, et, 301, "SPHERE", 10020, 10, "
 
 @gf_light group("geom_illum: ilumin, illumg, illumf, phaseq, trgsep", Kernels.FULL_SET_FILES...) do
     ctx = geo_setup(; dsk=true)
-    ks = Allspice.kernelset(ctx)
+    ks = Almanac.kernelset(ctx)
     rng = MersenneTwister(SEED + 102)
     reception = GEO_CORRS[1:5]
 

@@ -1,4 +1,4 @@
-# Allspice.jl verification suite. CSPICE (through SPICE.jl) is the oracle.
+# Almanac.jl verification suite. CSPICE (through SPICE.jl) is the oracle.
 #
 # Run all groups, with threads (group 7 needs more than one):
 #
@@ -13,12 +13,12 @@
 #
 #     julia --startup-file=no --threads=8 test/parallel.jl
 #
-# ALLSPICE_TEST_FULL=1 selects the exhaustive run (large samples, all derivative orders).
+# ALMANAC_TEST_FULL=1 selects the exhaustive run (large samples, all derivative orders).
 #
 # The kernels are downloaded into `test/data/` on the first run (about 110 MB); the
 # environment variables of `test/kernels.jl` change their paths and the download. A
 # group whose kernels are missing is skipped with a visible notice, or fails with
-# ALLSPICE_REQUIRE_KERNELS=1. ALLSPICE_TEST_SEED changes the random samples.
+# ALMANAC_REQUIRE_KERNELS=1. ALMANAC_TEST_SEED changes the random samples.
 
 include("helpers.jl")
 Kernels.fetch_kernels()
@@ -40,12 +40,12 @@ selected = isempty(ARGS) ? GROUPS : ARGS
 unknown = setdiff(selected, GROUPS)
 isempty(unknown) || error("unknown test group(s) $(unknown); the groups are $(GROUPS)")
 
-println("Allspice tests: Julia ", VERSION, ", ", Threads.nthreads(), " thread(s), seed ", SEED)
+println("Almanac tests: Julia ", VERSION, ", ", Threads.nthreads(), " thread(s), seed ", SEED)
 Threads.nthreads() == 1 && printstyled("NOTE  one thread only: group 7 will be skipped; run " *
     "with `julia --threads=8 --project=test test/runtests.jl`\n"; color=:yellow, bold=true)
 
 try
-    @testset "Allspice" begin
+    @testset "Almanac" begin
         for g in selected
             push!(GROUP_SECONDS, g => @elapsed include(joinpath(@__DIR__, "test_$g.jl")))
         end

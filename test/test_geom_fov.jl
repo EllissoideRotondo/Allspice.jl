@@ -11,7 +11,7 @@
 # The outputs of `fovtrg` and `fovray` are flags, so the comparison is exact.
 #
 # The default run has 500 random cases of `fovtrg` and `fovray`; the exhaustive run
-# (`ALLSPICE_TEST_FULL=1`) has 2000.
+# (`ALMANAC_TEST_FULL=1`) has 2000.
 
 isdefined(@__MODULE__, :GEOLIB) || include("geomfixtures.jl")
 
@@ -34,7 +34,7 @@ end
 function fov_same(ctx, room=100)
     kc = c_kind(() -> g_getfov(FOV_SCRATCH, room))
     kn = neo_kind(() -> getfov(ctx, FOV_SCRATCH, room))
-    kc == kn || (println("  getfov kinds: CSPICE ", repr(kc), ", Allspice ", repr(kn)); return false, kc)
+    kc == kn || (println("  getfov kinds: CSPICE ", repr(kc), ", Almanac ", repr(kn)); return false, kc)
     kc === nothing || return true, kc
     a = getfov(ctx, FOV_SCRATCH, room)
     b = g_getfov(FOV_SCRATCH, room)
@@ -165,7 +165,7 @@ end
             b = g_fovtrg(inst, t, sh, fr, cor, "EARTH", et)
             ntrg += 1
             ntrgvis += b
-            a == b || (nbad += 1; nbad <= 5 && println("  fovtrg differs: ", (inst, t, sh, cor, et, off), " Allspice ", a, ", CSPICE ", b))
+            a == b || (nbad += 1; nbad <= 5 && println("  fovtrg differs: ", (inst, t, sh, cor, et, off), " Almanac ", a, ", CSPICE ", b))
             if k % 20 == 0
                 @test fovtrg(ctx, bodn2c(ctx, inst), GEO_IDS[t], sh, "IAU_" * t, Aberration(cor), 399, et) == a
             end
@@ -178,7 +178,7 @@ end
             b = g_fovray(inst, d, rf, rc, "EARTH", et)
             nray += 1
             nrayvis += b
-            a == b || (nbad += 1; nbad <= 5 && println("  fovray differs: ", (inst, rf, rc, et, off), " Allspice ", a, ", CSPICE ", b))
+            a == b || (nbad += 1; nbad <= 5 && println("  fovray differs: ", (inst, rf, rc, et, off), " Almanac ", a, ", CSPICE ", b))
         end
         measured("  fovtrg: $ntrg cases, $ntrgvis visible; fovray: $nray cases, $nrayvis visible; differences: $nbad; too wide: $nwide")
         @test nbad == 0

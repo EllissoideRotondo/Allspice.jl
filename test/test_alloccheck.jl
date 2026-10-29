@@ -18,7 +18,7 @@ group("allocation proof: numeric kernels (AllocCheck)") do
         (vhat, (V,)), (vnorm, (V,)), (unorm, (V,)), (vcrss, (V, V)), (vdot, (V, V)), (vsep, (V, V)),
         (vproj, (V, V)), (vperp, (V, V)), (ucrss, (V, V)), (vrotv, (V, V, F)), (vlcom, (F, V, F, V)),
         (mxv, (M, V)), (mtxv, (M, V)), (mxm, (M, M)), (mtxm, (M, M)), (mxmt, (M, M)), (xpose, (M,)),
-        (invert, (M,)), (Allspice.det, (M,)), (rotate, (F, Int)), (rotmat, (M, F, Int)),
+        (invert, (M,)), (Almanac.det, (M,)), (rotate, (F, Int)), (rotmat, (M, F, Int)),
         (twovec, (V, Int, V, Int)), (mxvg, (M, V)), (mxmg, (M, M)), (mxmtg, (M, M)),
         (eul2m, (F, F, F, Int, Int, Int)), (m2eul, (M, Int, Int, Int)), (m2q, (M,)), (q2m, (V4,)),
         (qxq, (V4, V4)), (axisar, (V, F)), (raxisa, (M,)),
@@ -32,7 +32,7 @@ group("allocation proof: numeric kernels (AllocCheck)") do
         (stelab, (V, V)), (deltet, (SpiceContext, F, String)), (unitim, (SpiceContext, F, String, String)),
         (table_state, (typeof(tab), F)), (table_position, (typeof(tab), F)),
         (table_jet, (typeof(tab), F, Val{2})),
-        (Allspice.spk_eval, (Vector{Float64}, Allspice.Segment, F, Val{1})),
+        (Almanac.spk_eval, (Vector{Float64}, Almanac.Segment, F, Val{1})),
     ]
     bad = String[]
     for (f, tt) in cases        # invariant: `bad` names the functions before this one with a finding
@@ -41,7 +41,7 @@ group("allocation proof: numeric kernels (AllocCheck)") do
         push!(bad, string(f))
         # Each finding (allocation site, dynamic dispatch or runtime call) with its
         # backtrace, so that a CI log shows the cause; not the expected one below.
-        (f === Allspice.spk_eval && STACK_BUFFERS_ESCAPE) && continue
+        (f === Almanac.spk_eval && STACK_BUFFERS_ESCAPE) && continue
         println("AllocCheck: $(length(found)) finding(s) for $f$tt")
         foreach(x -> (show(stdout, x); println()), found)
     end

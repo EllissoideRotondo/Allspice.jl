@@ -30,7 +30,7 @@ jobs:
             os: windows-latest
     env:
       JULIA_NUM_THREADS: 4
-      ALLSPICE_REQUIRE_KERNELS: 1
+      ALMANAC_REQUIRE_KERNELS: 1
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2

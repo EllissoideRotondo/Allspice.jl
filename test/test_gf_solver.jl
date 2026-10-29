@@ -1,11 +1,11 @@
 # Geometry finder, solver core: `gfuds`, `gfudb`, `gfrefn`, `uddf`, `uddc`, `gfstol` and
 # the callbacks. No kernel is needed. The user functions are the same Julia
-# functions for Allspice and for CSPICE, so the two searches evaluate the same numbers
+# functions for Almanac and for CSPICE, so the two searches evaluate the same numbers
 # and every end point must be equal bit for bit: this group tests the step-and-bracket
 # logic, the bisection, the confinement end points, the adjust value and the absolute
 # extrema without any noise from the ephemeris.
 #
-# Default run and exhaustive run (`ALLSPICE_TEST_FULL=1`). `gfrefn`, `uddf`, `uddc` and the
+# Default run and exhaustive run (`ALMANAC_TEST_FULL=1`). `gfrefn`, `uddf`, `uddc` and the
 # window helpers have two branches each, so the default run takes 20 and 10 random cases
 # and the exhaustive run 200 and 100. The random searches are the same in the two runs.
 
@@ -146,7 +146,7 @@ gfv_d3(t) = 1.0e-3 * ((t - 11.0) * (t - 17.5) + (t - 3.0) * (t - 17.5) + (t - 3.
                 @test collect(gfuds(ctx, f2, qdec, "=", 0.1, 0.0, 0.2, cn)) == ref
                 # the keyword overrides the default, on every form
                 @test collect(gfuds(other, f2, qdec, "=", 0.1, 0.0, 0.2, cn; tol=tol)) == ref
-                @test collect(gfuds(Allspice.kernelset(other), f2, qdec, "=", 0.1, 0.0, 0.2, cn;
+                @test collect(gfuds(Almanac.kernelset(other), f2, qdec, "=", 0.1, 0.0, 0.2, cn;
                     tol=tol)) == ref
                 @test gfuds(other, f2, qdec, "=", 0.1, 0.0, 0.2, cn) == base
                 refb = GFO.gfudb(t -> f2(t) > 0.1, 0.2, collect(cn))
@@ -253,11 +253,11 @@ gfv_d3(t) = 1.0e-3 * ((t - 11.0) * (t - 17.5) + (t - 3.0) * (t - 17.5) + (t - 3.
             amount = rand(rng, (0.0, 0.5, 2.0))
             c = GFO.cell(collect(w))
             SPICE.wnexpd!(c, amount, amount)
-            @test collect(Allspice._gf_wnexpd(w, amount, amount)) == collect(Float64, c)
+            @test collect(Almanac._gf_wnexpd(w, amount, amount)) == collect(Float64, c)
         end
-        @test isempty(Allspice._gf_wnexpd(Window(), 0.5, 0.5))
+        @test isempty(Almanac._gf_wnexpd(Window(), 0.5, 0.5))
         inner = Window([1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 7.0, 7.0])
-        @test collect(Allspice._gf_wsts(inner, Window([1.0, 3.0, 5.0, 8.0]))) == [2.0, 2.0, 7.0, 7.0]
+        @test collect(Almanac._gf_wsts(inner, Window([1.0, 3.0, 5.0, 8.0]))) == [2.0, 2.0, 7.0, 7.0]
     end
 
     gf_report("ud")

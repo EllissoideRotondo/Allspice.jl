@@ -12,7 +12,7 @@ which the C calls do not, because the handle holds that state.
 A call that needs a context takes it as the optional first argument `[ctx,]`, a
 [`SpiceContext`](@ref), and uses [`default_context`](@ref) without it. `[ctx | ks,]`
 means that the call also accepts a `KernelSet`, the immutable snapshot of the kernels of
-a context that `Allspice.kernelset(ctx)` returns. [`dskxv!`](@ref) takes the context
+a context that `Almanac.kernelset(ctx)` returns. [`dskxv!`](@ref) takes the context
 after its two output arguments.
 
 The identifier of an SPK or CK segment (`segid`, `ident`) is the name of its DAF array,

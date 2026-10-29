@@ -3,7 +3,7 @@
 CSPICE returns a position and its first derivative. This package returns derivatives of any order, in two ways that give the same numbers to rounding: a direct call, and automatic differentiation through the ordinary calls.
 
 ```@setup der
-using Allspice
+using Almanac
 include(joinpath(@__DIR__, "..", "..", "fixture.jl"))
 foreach(furnsh, DocKernels.write(mktempdir()))
 ```
@@ -13,7 +13,7 @@ foreach(furnsh, DocKernels.write(mktempdir()))
 [`spkder`](@ref) returns the position of a target relative to an observer and its first `N` time derivatives, and [`pxder`](@ref) does the same for a rotation matrix. The order is a `Val`, so that the result is a tuple of static arrays; with names in upper case, as below, the call allocates no memory.
 
 ```@example der
-using Allspice
+using Almanac
 
 et = str2et("2025 MAR 01 12:00:00 UTC")
 position, velocity, acceleration = spkder("PROBE", et, "J2000", "EARTH", Val(2))

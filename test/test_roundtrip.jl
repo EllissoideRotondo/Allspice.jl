@@ -1,15 +1,15 @@
-# Group: files written by Allspice and read back by Allspice.
+# Group: files written by Almanac and read back by Almanac.
 #
 # The writers and the evaluators of the same data type were built apart, so this group
 # closes the loop: a type 13 SPK segment and a type 3 CK segment (the two that a
-# trajectory export needs) are written with Allspice, loaded with Allspice and with
+# trajectory export needs) are written with Almanac, loaded with Almanac and with
 # CSPICE, and both engines must return the same states and the same pointing.
 
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -77,7 +77,7 @@ group("roundtrip", Kernels.LSK, Kernels.DE440S) do
     ctx = neo_context(set)
     ets = vcat(epochs[1], epochs[end], epochs[7], random_epochs(rng, nsample(30, 200), epochs[1], epochs[end]))
 
-    @apart @testset "type 13 SPK written and read by Allspice" begin
+    @apart @testset "type 13 SPK written and read by Almanac" begin
         worst = 0.0
         for et in ets, (obs, ref) in ((399, "J2000"), (301, "J2000"), (10, "ECLIPJ2000"))
             s, lt = spkezr(ctx, -901, et, ref, "NONE", obs)
@@ -93,7 +93,7 @@ group("roundtrip", Kernels.LSK, Kernels.DE440S) do
         @test spkcov(bsp, -901)[1] == epochs[1]
     end
 
-    @apart @testset "type 3 CK written and read by Allspice" begin
+    @apart @testset "type 3 CK written and read by Almanac" begin
         worst = 0.0
         allfound = true
         for et in ets

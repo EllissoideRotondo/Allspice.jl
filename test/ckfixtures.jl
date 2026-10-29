@@ -10,7 +10,7 @@
 module CKFix
 
 import SPICE
-using Allspice: taylor_var, derivatives
+using Almanac: taylor_var, derivatives
 
 const LIB = SPICE.libcspice
 

@@ -10,8 +10,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -108,7 +108,7 @@ group("5. kernel pool and names against CSPICE", Kernels.TEXT_SET_FILES...,
             @test bodvrd(ctx, "EARTH", "GM") isa Vector{Float64}
         end
         @test_throws SPICE.SpiceError SPICE.bodvrd("EARTH", "NO_SUCH_ITEM")
-        # A blank name is an error in CSPICE; Allspice reports "not found".
+        # A blank name is an error in CSPICE; Almanac reports "not found".
         @test bodn2c(ctx, "") === nothing
         @test namfrm(ctx, "") == 0
         @test throws_kind(() -> bodvrd(ctx, "EARTH", "NO_SUCH_ITEM"), :kernelvarnotfound)
@@ -156,7 +156,7 @@ group("5. kernel pool and names against CSPICE", Kernels.TEXT_SET_FILES...,
 
     @apart @testset "no leap-second kernel" begin
         empty = SpiceContext()
-        @test_throws Allspice.SpiceError utc2et(empty, "2000-01-01T12:00:00")
+        @test_throws Almanac.SpiceError utc2et(empty, "2000-01-01T12:00:00")
     end
 end
 

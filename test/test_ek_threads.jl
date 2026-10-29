@@ -1,7 +1,7 @@
 # Group EK 3: EK queries on many threads while another task loads and unloads an EK file.
 #
 # CSPICE is called only to write the EK files, before any task starts; it has one global
-# query result and cannot run this test. The reference answers come from Allspice,
+# query result and cannot run this test. The reference answers come from Almanac,
 # computed serially (group `ek_query` compares the same kinds of queries with CSPICE).
 #
 # The writer task cycles one context through two load lists: with and without the file
@@ -12,7 +12,7 @@
 # The code of the EK groups is long and most of it runs once, so Julia compiles the
 # module of the tests without optimization while this file runs (5 s less for the five
 # EK groups); the last line of the file gives the default level back. The level of
-# Allspice does not change.
+# Almanac does not change.
 Base.Experimental.@optlevel 0
 
 isdefined(@__MODULE__, :EKLIB) || include("ekfixtures.jl")

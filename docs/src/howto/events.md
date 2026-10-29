@@ -3,7 +3,7 @@
 The geometry finder answers questions of the form "when is this quantity equal to, above or below a value, or at an extremum?". Each search takes a confinement window, which is the set of times to search, and returns the window of times at which the condition holds.
 
 ```@setup gf
-using Allspice
+using Almanac
 include(joinpath(@__DIR__, "..", "..", "fixture.jl"))
 foreach(furnsh, DocKernels.write(mktempdir()))
 ```
@@ -13,7 +13,7 @@ foreach(furnsh, DocKernels.write(mktempdir()))
 A [`Window`](@ref) is a sorted list of disjoint intervals of time. [`wninsd!`](@ref) adds an interval, [`wncard`](@ref) counts the intervals, and [`wnfetd`](@ref) returns one of them, with indices from 1.
 
 ```@example gf
-using Allspice
+using Almanac
 
 start = str2et("2025 MAR 18 00:00:00 TDB")
 search = Window()

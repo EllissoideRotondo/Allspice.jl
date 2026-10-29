@@ -5,7 +5,7 @@
 # The motion is two-body motion, so the positions are not those of the real bodies.
 module DocKernels
 
-using Allspice
+using Almanac
 
 const MU_SUN = 1.32712440041e11      # km^3/s^2
 const MU_EARTH = 3.986004418e5       # km^3/s^2

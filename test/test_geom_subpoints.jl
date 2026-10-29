@@ -35,7 +35,7 @@ sub_alloc_rec(ks) = @allocated srfrec(ks, 301, 0.1, 0.2)
 
 @gf_light group("geom_subpoints: subpnt, subslr, sincpt, srfrec", Kernels.FULL_SET_FILES...) do
     ctx = geo_setup(; dsk=true)
-    ks = Allspice.kernelset(ctx)
+    ks = Almanac.kernelset(ctx)
     rng = MersenneTwister(SEED + 101)
 
     @testset "subpnt and subslr on ellipsoids, 600 random cases" begin
@@ -210,7 +210,7 @@ sub_alloc_rec(ks) = @allocated srfrec(ks, 301, 0.1, 0.2)
         end
         @test grel(subslr(ctx, "NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "MOON")[1],
             g_subslr("NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "MOON")[1]) < SUB_TOL.point
-        # No ephemeris data for Mars: CSPICE gives SPKINSUFFDATA, Allspice the kind of its SPK layer.
+        # No ephemeris data for Mars: CSPICE gives SPKINSUFFDATA, Almanac the kind of its SPK layer.
         @test c_kind(() -> g_subpnt("NEAR POINT/ELLIPSOID", "MARS", et, "IAU_MARS", "LT", "EARTH")) == :spkinsuffdata
         @test neo_kind(() -> subpnt(ctx, "NEAR POINT/ELLIPSOID", "MARS", et, "IAU_MARS", "LT", "EARTH")) == :spkinsuffdata
         @test neo_kind(() -> sincpt(ctx, "ELLIPSOID", "MARS", et, "IAU_MARS", "LT", "EARTH", "J2000", e3)) == :spkinsuffdata
@@ -250,7 +250,7 @@ sub_alloc_rec(ks) = @allocated srfrec(ks, 301, 0.1, 0.2)
         @test same_kind(() -> g_subslr("NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "EARTH"),
             () -> subslr(ctx, "NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "EARTH"); expect=:kernelvarnotfound)
         both_pdpool(ctx, "BODY301_RADII", radii)
-        ks = Allspice.kernelset(ctx)
+        ks = Almanac.kernelset(ctx)
         @test grel(subpnt(ctx, "NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "EARTH")[1],
             g_subpnt("NEAR POINT/ELLIPSOID", "MOON", et, "IAU_MOON", "LT", "EARTH")[1]) < SUB_TOL.point
     end
@@ -295,7 +295,7 @@ sub_alloc_rec(ks) = @allocated srfrec(ks, 301, 0.1, 0.2)
     end
 
     @testset "no allocation and inferred types on ellipsoids" begin
-        ks = Allspice.kernelset(ctx)
+        ks = Almanac.kernelset(ctx)
         et = 2.5e8
         dv = SVector{3,Float64}(spkpos(ctx, 301, et, 1, "LT+S", 399)[1])
         for c in ("NONE", "LT", "LT+S", "CN", "CN+S", "XLT+S", "XCN")
@@ -317,7 +317,7 @@ sub_alloc_rec(ks) = @allocated srfrec(ks, 301, 0.1, 0.2)
     end
 
     @testset "epoch as a dual number: derivative against the central difference" begin
-        ks = Allspice.kernelset(ctx)
+        ks = Almanac.kernelset(ctx)
         st = GeoStats()
         h = 20.0
         for et in record_safe_epochs(rng, nsample(6, 24))

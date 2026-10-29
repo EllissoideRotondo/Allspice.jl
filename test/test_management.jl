@@ -3,8 +3,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -12,7 +12,7 @@ isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 function write_metakernel(tmp::AbstractString, dir::AbstractString, files)
     @assert all(f -> dirname(f) == dir, files)
     @assert length(dir) <= 80 "PATH_VALUES entry longer than the CSPICE limit"
-    path = joinpath(tmp, "allspice_test.tm")
+    path = joinpath(tmp, "almanac_test.tm")
     list = join(("'\$K/" * basename(f) * "'" for f in files), ",\n                        ")
     write(path, """
     KPL/MK
@@ -74,8 +74,8 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
         @test ktotal(ctx) == length(Kernels.full_set())
         kclear(ctx)
         @test ktotal(ctx) == 0
-        @test_throws Allspice.SpiceError query(ctx, epochs[1])
-        @test_throws Allspice.SpiceError pxform(ctx, "J2000", "MOON_PA", epochs[1])
+        @test_throws Almanac.SpiceError query(ctx, epochs[1])
+        @test_throws Almanac.SpiceError pxform(ctx, "J2000", "MOON_PA", epochs[1])
         @test throws_kind(() -> gdpool(ctx, "BODY399_RADII"), :kernelvarnotfound)
         # Built-in names and frames need no kernel.
         @test bodn2c(ctx, "EARTH") == 399
@@ -128,7 +128,7 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
         end
         @test bodvrd(a, "NEPTUNE", "PM") != bodvrd(b, "NEPTUNE", "PM")
         @test maximum(abs.(pxform(a, "J2000", "IAU_NEPTUNE", 1e8) - pxform(b, "J2000", "IAU_NEPTUNE", 1e8))) > 1e-3
-        # The mixed Mars constants are an error in CSPICE and in Allspice.
+        # The mixed Mars constants are an error in CSPICE and in Almanac.
         @test_throws SPICE.SpiceError SPICE.pxform("J2000", "IAU_MARS", 1e8)
         @test throws_kind(() -> pxform(b, "J2000", "IAU_MARS", 1e8), :insufficientangles)
     end
@@ -167,7 +167,7 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
             @test ktotal(ctx) == SPICE.ktotal("ALL") == 1
             @test throws_kind(() -> gdpool(ctx, "BODY399_RADII"), :kernelvarnotfound)
             @test spkezr(ctx, 301, epochs[1], "J2000", "NONE", 399)[1] isa SVector{6,Float64}
-            @test_throws Allspice.SpiceError pxform(ctx, "J2000", "MOON_PA_DE440", epochs[1])
+            @test_throws Almanac.SpiceError pxform(ctx, "J2000", "MOON_PA_DE440", epochs[1])
             # A missing file gives an error and leaves the context unchanged.
             @test throws_kind(() -> furnsh(ctx, joinpath(tmp, "absent.bsp")), :nosuchfile)
             @test ktotal(ctx) == 1
@@ -202,8 +202,8 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
         @test throws_kind(() -> spkezr(ctx, "NO_SUCH_BODY", 0.0, "J2000", "NONE", "EARTH"), :idcodenotfound)
         @test throws_kind(() -> spkezr(ctx, "EARTH", 0.0, "J2000", "NONE", "NO_SUCH_BODY"), :idcodenotfound)
         @test throws_kind(() -> spkder(ctx, "NO_SUCH_BODY", 0.0, "J2000", "EARTH", Val(1)), :idcodenotfound)
-        @test_throws Allspice.SpiceError spkezr(ctx, 599, 0.0, "J2000", "NONE", 399)
-        @test_throws Allspice.SpiceError spkezr(ctx, "PHOBOS", 0.0, "J2000", "NONE", "EARTH")
+        @test_throws Almanac.SpiceError spkezr(ctx, 599, 0.0, "J2000", "NONE", 399)
+        @test_throws Almanac.SpiceError spkezr(ctx, "PHOBOS", 0.0, "J2000", "NONE", "EARTH")
         # A geometric state of a body relative to itself is zero before the frame is
         # checked, as in CSPICE; a corrected one checks the frame.
         oracle_load(Kernels.full_set())
@@ -223,11 +223,11 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
         # A frame whose data are not loaded (binary PCK of DE421 is not on disk).
         if isfile(Kernels.MOON_TF_OLD)
             old = neo_context([Kernels.text_set()..., Kernels.MOON_TF_OLD, Kernels.MOON_BPC])
-            @test_throws Allspice.SpiceError pxform(old, "J2000", "MOON_PA_DE421", 0.0)
+            @test_throws Almanac.SpiceError pxform(old, "J2000", "MOON_PA_DE421", 0.0)
         end
         # The error is printable and names the kind.
         err = try spkezr(ctx, 301, 1e11, "J2000", "NONE", 399) catch e; e end
-        @test err isa Allspice.SpiceError
+        @test err isa Almanac.SpiceError
         @test occursin("spkinsuffdata", sprint(showerror, err))
         @test !isempty(err.msg)
         # Missing SPK data carry the query and the body without data. `loaded` tells an
@@ -298,7 +298,7 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
             ccall((:reset_c, SPICE.libcspice), Cvoid, ())
             return Symbol(lowercase(replace(unsafe_string(pointer(buf)), "SPICE(" => "", ")" => "")))
         end
-        nkind(f) = try f(); :none catch e; e isa Allspice.SpiceError ? e.kind : rethrow() end
+        nkind(f) = try f(); :none catch e; e isa Almanac.SpiceError ? e.kind : rethrow() end
         oracle_load(Kernels.full_set())
         ctx = neo_context(Kernels.full_set())
         SPICE.pcpool("BODY399_MGMT_TEXT", ["a"]); pcpool(ctx, "BODY399_MGMT_TEXT", ["a"])
@@ -435,16 +435,16 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
             return out
         end
         trees = [Meta.parseall(read(joinpath(root, f), String)) for (root, _, files) in
-                 walkdir(joinpath(pkgdir(Allspice), "src")) for f in files if endswith(f, ".jl")]
+                 walkdir(joinpath(pkgdir(Almanac), "src")) for f in files if endswith(f, ".jl")]
         helpers = Dict{Any,Tuple}()
         while any(t -> helpers!(helpers, t), trees)   # until no function hands a kind on to a new one
         end
         thrown, other = Set{Symbol}(), Any[]
         foreach(t -> kinds!(thrown, other, t, helpers), trees)
         @test isempty(other)                     # a first argument of a form that is not read
-        @test issorted(Allspice.ERROR_KINDS) && allunique(Allspice.ERROR_KINDS)
-        @test sort!(collect(setdiff(thrown, Allspice.ERROR_KINDS))) == Symbol[]     # thrown, not registered
-        @test sort!(collect(setdiff(Allspice.ERROR_KINDS, thrown))) == Symbol[]     # registered, never thrown
+        @test issorted(Almanac.ERROR_KINDS) && allunique(Almanac.ERROR_KINDS)
+        @test sort!(collect(setdiff(thrown, Almanac.ERROR_KINDS))) == Symbol[]     # thrown, not registered
+        @test sort!(collect(setdiff(Almanac.ERROR_KINDS, thrown))) == Symbol[]     # registered, never thrown
         @test_throws ArgumentError SpiceError(:nosuchkind, "a kind that is not registered")
     end
 
@@ -453,7 +453,7 @@ group("6. kernel management", Kernels.FULL_SET_FILES..., Kernels.DE430, Kernels.
         c440 = neo_context([Kernels.DE440S])
         c430 = neo_context([Kernels.DE430])
         @test ktotal() == 0
-        @test_throws Allspice.SpiceError spkezr(301, epochs[1], "J2000", "NONE", 399)
+        @test_throws Almanac.SpiceError spkezr(301, epochs[1], "J2000", "NONE", 399)
         a = [query(c440, et) for et in epochs]
         b = [query(c430, et) for et in epochs]
         @test all(a[i] != b[i] for i in eachindex(epochs))

@@ -3,7 +3,7 @@
 An optimizer or a GPU function that needs the position of a body many times on a known interval of time does not need the SPICE kernels in its inner loop. [`ephemeris_table`](@ref) extracts the position of one body relative to another on that interval into an [`EphemerisTable`](@ref), which is one flat array of Chebyshev coefficients on intervals of equal length. The evaluation then needs no loaded kernels, no search for a segment and no chain of bodies.
 
 ```@setup tab
-using Allspice
+using Almanac
 include(joinpath(@__DIR__, "..", "..", "fixture.jl"))
 foreach(furnsh, DocKernels.write(mktempdir()))
 ```
@@ -11,7 +11,7 @@ foreach(furnsh, DocKernels.write(mktempdir()))
 ## Build and evaluate
 
 ```@example tab
-using Allspice
+using Almanac
 
 t0 = str2et("2025 MAR 01 12:00:00 UTC")
 t1 = t0 + 86400.0
@@ -55,7 +55,7 @@ states = map(et -> @inbounds(table_state(gpu, et)), CuArray(epochs))
 [CasADiCodegen.jl](https://github.com/EllissoideRotondo/CasADiCodegen.jl) generates Julia code from a model of CasADi, and its `callback` puts a Julia function into the model with the derivatives that CasADi needs. Because [`table_jet`](@ref) returns static vectors, a table can give the position of a body to a force model in generated code with no memory allocation per call, and the same call gives the time derivatives of the position for the Jacobian of the model. The block below is a sketch and not a complete program: the body is a satellite of the Earth that the Moon perturbs, and the times `t0` and `t1` and the gravitational parameters `GM_EARTH` and `GM_MOON` are values of the application.
 
 ```julia
-using Allspice, CasADiCodegen, LinearAlgebra
+using Almanac, CasADiCodegen, LinearAlgebra
 
 tab = ephemeris_table("MOON", t0, t1, "J2000", "NONE", "EARTH")
 order(k) = let v = Val(k); t -> table_jet(tab, t[1], v)[k+1]; end       # derivative k of the position

@@ -1,11 +1,11 @@
 ---
-name: allspice-tests
-description: Use when adding, changing, reviewing or trimming tests of Allspice.jl, or when a fault is fixed and needs a regression test; the rules of this repository on top of the global julia-tests skill.
+name: almanac-tests
+description: Use when adding, changing, reviewing or trimming tests of Almanac.jl, or when a fault is fixed and needs a regression test; the rules of this repository on top of the global julia-tests skill.
 ---
 
-# Allspice test rules
+# Almanac test rules
 
-The general rules (what earns a test, what does not, the review trigger) are in the global skill `julia-tests`. This file holds only what is particular to Allspice.jl.
+The general rules (what earns a test, what does not, the review trigger) are in the global skill `julia-tests`. This file holds only what is particular to Almanac.jl.
 
 ## Before writing tests: the behaviour matrix
 
@@ -15,7 +15,7 @@ Write the behaviour-to-test table of the global skill `julia-tests` first. Layer
 
 - Framework: `Test` with the group files `test/test_<group>.jl`; no test-item migration, no Supposition.
 - The oracle is CSPICE. A tolerance is the measured rounding difference with a stated reason, never a value chosen so that the test passes.
-- Random input uses the seeded generator of the suite (`ALLSPICE_TEST_SEED`).
+- Random input uses the seeded generator of the suite (`ALMANAC_TEST_SEED`).
 - CSPICE keeps state between calls; a test that calls it must reset what it changed (`tsetyr`, `tparch`, loaded kernels) in a `finally` block.
 - A reader loop in a concurrency test calls `yield()`.
 - A count threshold that goes with a random sample (`nhit > 800`) is a fraction of the sample size, so that it holds in both tiers.

@@ -780,7 +780,7 @@ end
     det(m1)
 
 Return the determinant of a 3 by 3 matrix, as `det_c` (expansion along the first row).
-Not exported, because `LinearAlgebra` exports the same name: call `Allspice.det`.
+Not exported, because `LinearAlgebra` exports the same name: call `Almanac.det`.
 """
 det(m1::AbstractMatrix) = _m_det(_m_m3(m1))
 

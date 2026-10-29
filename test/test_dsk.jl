@@ -2,7 +2,7 @@
 #
 # CSPICE is the oracle. No DSK file is needed on the machine: the group makes plate
 # models (a tessellated ellipsoid, rough random surfaces, cubes, patches of a surface),
-# writes them with the CSPICE writer and with the Allspice writer, and compares:
+# writes them with the CSPICE writer and with the Almanac writer, and compares:
 #
 #   (a) the spatial index, the bounds of the third coordinate and the files of the two
 #       writers (every integer and every double; the bytes outside of record padding);
@@ -21,8 +21,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -158,7 +158,7 @@ alloc_dskxsi(ctx, srf, et, fixfid, v, d) = @allocated dskxsi(ctx, false, 499, sr
 alloc_dskxv!(x, f, ctx, srf, et, fixfid, v, d) = @allocated dskxv!(x, f, ctx, false, 499, srf, et, fixfid, v, d)
 function alloc_dskx02(ks, seg, v, d)
     file = ks.dskfiles[seg.file]
-    return @allocated Allspice._dsk_x02(file.ints, file.dps, seg, Allspice._DSK_DEFAULT_TOLS, v, d)
+    return @allocated Almanac._dsk_x02(file.ints, file.dps, seg, Almanac._DSK_DEFAULT_TOLS, v, d)
 end
 dsk_warm(f, args...) = (f(args...); f(args...))
 
@@ -176,24 +176,24 @@ function compare_xsi(ctx, ks, target, srf, et, fixref, v, d)
     same = dla_tuple(cdla) == dla_tuple(seg.dladsc) && dsk_tuple(cdsk) == dsk_tuple(seg.dskdsc) &&
            SPICE.dashfn(chh) == ks.dskfiles[seg.file].path
     stale = false
-    fixfid = Allspice.namfrm(ctx, fixref)
+    fixfid = Almanac.namfrm(ctx, fixref)
     inframe = seg.dskdsc.frmcde == fixfid
     if same && plid != cp
         # CSPICE returns the plate of the last searched segment that has an intercept,
         # which is not always the segment with the closest one. The plate of
-        # Allspice must be the one that `dskx02` of CSPICE finds in the segment that
+        # Almanac must be the one that `dskx02` of CSPICE finds in the segment that
         # both engines return, for the ray in the frame of that segment.
         # CSPICE searches a segment in the frame of the ray from the vertex moved onto
         # the outer bounding sphere, unless a segment in another frame takes part.
         sv, sd = v, d
         body = Int32(seg.dskdsc.center)
         segs = ks.dsk[body]
-        multfr = any(Allspice._dsk_eligible(g, body, srf, et) && g.dskdsc.frmcde != fixfid for g in segs)
+        multfr = any(Almanac._dsk_eligible(g, body, srf, et) && g.dskdsc.frmcde != fixfid for g in segs)
         if !inframe
-            _, sv, sd = Allspice._dsk_to_segment(ks, seg.dskdsc, Int32(fixfid), et, v, d)
+            _, sv, sd = Almanac._dsk_to_segment(ks, seg.dskdsc, Int32(fixfid), et, v, d)
         elseif !multfr
-            maxrad = Allspice._dsk_sph(ks, segs, body, srf)[2] * 1.01
-            norm(v) > maxrad && (sv = Allspice._dsk_surfpt(v, d, maxrad, maxrad, maxrad)[1])
+            maxrad = Almanac._dsk_sph(ks, segs, body, srf)[2] * 1.01
+            norm(v) > maxrad && (sv = Almanac._dsk_surfpt(v, d, maxrad, maxrad, maxrad)[1])
         end
         stale = c_dskx02(chh, cdla, sv, sd)[2] == plid
     end
@@ -239,7 +239,7 @@ function dsk_part_1(env)
         ni, nd, _ = neo_das_data(npath)
         @test ci == ni
         @test bits_equal(cd, nd)
-        @test c_das_data(npath)[1] == ci                    # CSPICE reads the Allspice file
+        @test c_das_data(npath)[1] == ci                    # CSPICE reads the Almanac file
         @test bits_equal(c_das_data(npath)[2], cd)
         @test neo_das_data(cpath)[1] == ci                  # and the reverse
         bc = read(cpath)
@@ -277,7 +277,7 @@ function dsk_part_2(env)
     @test dskobj!([1000, 499], p) == sort!(unique!([1000; 499; dskobj(p)]))
     @test dsksrf!([7, -1], p, 499) == sort!(unique!([7; -1; dsksrf(p, 499)]))
     # The two files of a pair hold the same integers and doubles (part a), so the default
-    # run reads the CSPICE file of each pair and the Allspice file of the first pair only.
+    # run reads the CSPICE file of each pair and the Almanac file of the first pair only.
     for name in (:a, :b, :c), path in (FULL || name === :a ? files[name] : files[name][1:1])
         @test dskobj(path) == collect(SPICE.dskobj!(SPICE.SpiceIntCell(10), path))
         for body in (499, 401, 5)
@@ -466,7 +466,7 @@ function dsk_part_5(env)
         @test maximum(norm(cx[i] - nx[i]) for i in 1:n if cf[i]) <= (isempty(srf) || fixref != "IAU_MARS" ? 1e-11 : 0.0)
         @test all(iszero(nx[i]) for i in 1:n if !nf[i])
         # The matrix form, vectors of plain vectors, and integer IDs give the same.
-        mx, mf = dskxv(ctx, false, 499, srf, et, Allspice.namfrm(ctx, fixref),
+        mx, mf = dskxv(ctx, false, 499, srf, et, Almanac.namfrm(ctx, fixref),
             reduce(hcat, vtx), reduce(hcat, dirs))
         @test mx == nx && mf == nf
         px, pf = dskxv(ctx, false, "mars", collect(srf), et, lowercase(fixref),
@@ -807,7 +807,7 @@ function dsk_part_11(env)
     # Item 1 (the number of vertices) has one element. For a start index above 1 the
     # answer of CSPICE is not stable: the same call gives SPICE(INDEXOUTOFRANGE),
     # SPICE(DASNOSUCHADDRESS) or no error, and which one depends on the calls before it
-    # (three equal calls in a row gave two of them). Allspice always gives the first one,
+    # (three equal calls in a row gave two of them). Almanac always gives the first one,
     # and CSPICE is not asked: it is no oracle here.
     @test neo_kind(() -> dski02(h, d, 1, 2, 1)) === :indexoutofrange
     for (item, start, room) in ((19, 1, 0), (14, 1, 1), (20, 1, 1), (19, 0, 1), (19, 3 * nv + 1, 1),
@@ -932,9 +932,9 @@ end
 function dsk_part_13(env)
     (; rng, dir, tk, spk, specs_a, specs_b, specs_c, files, wctx, comments) = env
     (; loadlist, ctx, ks, shape_e, shape_r, shape_w) = env
-    iau = Int(Allspice.namfrm(ctx, "IAU_MARS"))
-    tilt = Int(Allspice.namfrm(ctx, "MARS_TILT"))
-    pck2 = Int(Allspice.namfrm(ctx, "MARS_PCK2"))
+    iau = Int(Almanac.namfrm(ctx, "IAU_MARS"))
+    tilt = Int(Almanac.namfrm(ctx, "MARS_TILT"))
+    pck2 = Int(Almanac.namfrm(ctx, "MARS_PCK2"))
     v = V3(10.0, 1.0, 2.0)
     miss = V3(0.0, 0.0, 1.0)
     srf = [1, 2, 3, 4, 5, 6, 7]
@@ -957,10 +957,10 @@ function dsk_part_13(env)
     @test (@inferred Union{Nothing,R} dskxsi(ctx, false, 499, srf, 0.0, iau, v, -v)) isa R
     @test (@inferred Union{Nothing,R} dskxsi(ctx, false, "MARS", (), 0.0, "IAU_MARS", v, -v)) isa R
     @test (@inferred Union{Nothing,R} dskxsi(ctx, false, 499, (), 0.0, iau, v, miss)) === nothing
-    @test (@inferred Allspice._dsk_bux(ks, Allspice._DSK_DEFAULT_TOLS, Int32(499), srf, 0.0,
+    @test (@inferred Almanac._dsk_bux(ks, Almanac._DSK_DEFAULT_TOLS, Int32(499), srf, 0.0,
         Int32(iau), v, -v)) isa Tuple{V3,Int,Int,Bool}
     file = ks.dskfiles[seg.file]
-    @test (@inferred Allspice._dsk_x02(file.ints, file.dps, seg, Allspice._DSK_DEFAULT_TOLS,
+    @test (@inferred Almanac._dsk_x02(file.ints, file.dps, seg, Almanac._DSK_DEFAULT_TOLS,
         v, -v)) isa Tuple{Int,V3,Bool}
     @test (@inferred dskxv!(xpt, fnd, ctx, false, 499, srf, 0.0, iau, vtx, dirs)) isa Tuple{Vector{V3},Vector{Bool}}
     @test (@inferred dskxv(ctx, false, 499, srf, 0.0, iau, vtx, dirs)) isa Tuple{Vector{V3},Vector{Bool}}
@@ -975,7 +975,7 @@ end
 function dsk_part_14(env)
     (; rng, dir, tk, spk, specs_a, specs_b, specs_c, files, wctx, comments) = env
     (; loadlist, ctx, ks, shape_e, shape_r, shape_w) = env
-    iau = Int(Allspice.namfrm(ctx, "IAU_MARS"))
+    iau = Int(Almanac.namfrm(ctx, "IAU_MARS"))
     n = nsample(500, 20_000)
     vtx = [dsk_ray(rng, 1, shape_e)[1] for _ in 1:n]
     dirs = [V3(randn(rng, 3)) * 2.2 - x for x in vtx]
@@ -1003,12 +1003,12 @@ function dsk_part_14(env)
         return best / n * 1e9
     end
     measured("  time per intercept (ns), best of 3 runs of $n rays, one thread:")
-    measured("    case                                      Allspice    CSPICE   ratio")
+    measured("    case                                      Almanac    CSPICE   ratio")
     for (label, srf, fixref) in (("one segment, 3480 plates (surface 1)", [1], "IAU_MARS"),
             ("one segment, 5040 plates (surface 2)", [2], "IAU_MARS"),
             ("9 segments, all surfaces", Int[], "IAU_MARS"),
             ("9 segments, other frame (MARS_TILT)", Int[], "MARS_TILT"))
-        tn = n_time(srf, Int(Allspice.namfrm(ctx, fixref)))
+        tn = n_time(srf, Int(Almanac.namfrm(ctx, fixref)))
         tc = c_time(srf, fixref)
         measured(@sprintf("    %-40s %9.0f %9.0f %7.2f", label, tn, tc, tn / tc))
         @test tn < 20 * tc           # a coarse bound; the measured values are in the report
@@ -1023,7 +1023,7 @@ function dsk_part_15(env)
     if Threads.nthreads() < 2
         skip_notice("12. DSK threads", "Threads.nthreads() == 1")
     else
-        iau = Int(Allspice.namfrm(ctx, "IAU_MARS"))
+        iau = Int(Almanac.namfrm(ctx, "IAU_MARS"))
         base = [tk, spk, files[:a][1]]
         extra = files[:b][1]
         n = 2000
@@ -1116,7 +1116,7 @@ group("12. DSK type 2 against CSPICE") do
     loadlist = [tk, spk, files[:a][1], files[:b][1], files[:c][1]]
     oracle_load(loadlist)
     ctx = neo_context(loadlist)
-    ks = Allspice.kernelset(ctx)
+    ks = Almanac.kernelset(ctx)
     shape_e = (specs_a[1].verts, specs_a[1].plates)
     shape_r = (specs_a[2].verts, specs_a[2].plates)
     shape_w = (specs_b[2].verts, specs_b[2].plates)

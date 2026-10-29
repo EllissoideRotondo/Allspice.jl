@@ -1,12 +1,12 @@
 # The error type of the package and the registry of its kinds.
 
 """
-    Allspice.ERROR_KINDS
+    Almanac.ERROR_KINDS
 
 The kinds of [`SpiceError`](@ref) that the package can throw, as a sorted tuple of
 symbols.
 
-Use it to check a kind that a handler tests: `:spkinsuffdata in Allspice.ERROR_KINDS`. A
+Use it to check a kind that a handler tests: `:spkinsuffdata in Almanac.ERROR_KINDS`. A
 `SpiceError` with a kind that is not in the tuple cannot be constructed, so a comparison
 with such a kind is never true.
 """
@@ -105,7 +105,7 @@ const ERROR_KINDS = (
 
 # The check is not inlined, so that a throw site in a numeric kernel stays one call.
 @noinline function _check_kind(kind::Symbol)
-    kind in ERROR_KINDS || throw(ArgumentError("$(repr(kind)) is not in Allspice.ERROR_KINDS"))
+    kind in ERROR_KINDS || throw(ArgumentError("$(repr(kind)) is not in Almanac.ERROR_KINDS"))
     return kind
 end
 
@@ -137,7 +137,7 @@ A call of CSPICE that has a `found` flag returns `nothing` here when nothing is 
 unless its docstring names another result (an error, `0`, an empty string or vector, or
 the flag itself).
 
-[`Allspice.ERROR_KINDS`](@ref) lists every kind. A kind that is not in the list cannot
+[`Almanac.ERROR_KINDS`](@ref) lists every kind. A kind that is not in the list cannot
 be constructed.
 
 # Examples

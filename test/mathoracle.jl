@@ -4,7 +4,7 @@
 # not wrap some others, so the oracle calls the C library itself: `CS.name(args...)` is
 # the function `name_c` of CSPICE and `CS.name_(args...)` the f2c routine `name_`. A
 # CSPICE error becomes a `CS.CError` with the short message as a lower-case symbol,
-# which is the `kind` of the `SpiceError` that Allspice throws for the same input.
+# which is the `kind` of the `SpiceError` that Almanac throws for the same input.
 #
 # A wrapper is described by the return type and one code for each C argument:
 #
@@ -400,12 +400,12 @@ function reldiff(a, b)
     return s == 0.0 ? d : d / s
 end
 
-"Result of `f()`, or the error kind as a symbol for a Allspice or CSPICE error."
+"Result of `f()`, or the error kind as a symbol for a Almanac or CSPICE error."
 function outcome(f)
     try
         return f()
     catch e
-        e isa Allspice.SpiceError && return e.kind
+        e isa Almanac.SpiceError && return e.kind
         e isa CS.CError && return e.kind
         rethrow()
     end
@@ -455,7 +455,7 @@ function versus!(t::Tally, name::Symbol, neo, c; scale::Float64=1.0)
     d = reldiff(a, b) / scale
     if d > t.maxdiff[name]
         t.maxdiff[name] = d
-        t.worst[name] = (input=captured(neo), allspice=a, cspice=b, scale=scale)
+        t.worst[name] = (input=captured(neo), almanac=a, cspice=b, scale=scale)
     end
     return d
 end
@@ -479,7 +479,7 @@ function report!(t::Tally, family::AbstractString; tol::Float64=0.0, tols=Dict{S
             w = t.worst[name]
             @info("largest difference against CSPICE above the limit", family, name,
                 maxdiff = t.maxdiff[name], limit, scale = w.scale, input = repr(w.input),
-                allspice = repr(w.allspice), cspice = repr(w.cspice))
+                almanac = repr(w.almanac), cspice = repr(w.cspice))
         end
         worst = max(worst, t.maxdiff[name])
     end

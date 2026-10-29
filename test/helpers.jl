@@ -6,21 +6,21 @@
 
 using Test, Random, LinearAlgebra, Printf
 using StaticArrays
-using Allspice
+using Almanac
 import SPICE
 
 include("kernels.jl")
 using .Kernels: Kernels
 
-"Seed of every random sample; change it with the environment variable ALLSPICE_TEST_SEED."
-const SEED = parse(Int, get(ENV, "ALLSPICE_TEST_SEED", "20261011"))
+"Seed of every random sample; change it with the environment variable ALMANAC_TEST_SEED."
+const SEED = parse(Int, get(ENV, "ALMANAC_TEST_SEED", "20261011"))
 
 """
-True for the exhaustive run (environment variable ALLSPICE_TEST_FULL=1). The default
+True for the exhaustive run (environment variable ALMANAC_TEST_FULL=1). The default
 run has a budget of 120 s for all groups together; a group keeps its large samples,
 long search spans and large files for the exhaustive run.
 """
-const FULL = get(ENV, "ALLSPICE_TEST_FULL", "0") == "1"
+const FULL = get(ENV, "ALMANAC_TEST_FULL", "0") == "1"
 
 """
 True with `--check-bounds=yes` (the default of `julia-actions/julia-runtest`, and of
@@ -37,7 +37,7 @@ STACK_BUFFERS_ESCAPE && @info "--check-bounds=yes: the allocation checks of rout
     nsample(fast, full)
 
 Size of a sample: `fast` in the default run, `full` in the exhaustive run
-(`ALLSPICE_TEST_FULL=1`). Requires `0 <= fast <= full`.
+(`ALMANAC_TEST_FULL=1`). Requires `0 <= fast <= full`.
 """
 function nsample(fast::Integer, full::Integer)
     @assert 0 <= fast <= full
@@ -46,7 +46,7 @@ end
 
 """
 True on x86-64, where CSPICE, the oracle, converts a double outside the 32-bit integers
-to `typemin(Int32)`, as Allspice does on every machine (`_cint`). The conversion is
+to `typemin(Int32)`, as Almanac does on every machine (`_cint`). The conversion is
 undefined in C, and CSPICE on other processors gives other values (ARM saturates).
 """
 const ORACLE_CAST_X86 = Sys.ARCH === :x86_64
@@ -152,14 +152,14 @@ end
     group(body, name, kernels...)
 
 Run `body()` inside `@testset name`, or print a skip notice if one of `kernels` is not
-on disk; with ALLSPICE_REQUIRE_KERNELS=1 a missing kernel throws an error instead.
+on disk; with ALMANAC_REQUIRE_KERNELS=1 a missing kernel throws an error instead.
 Postcondition: the group is either run or listed in `SKIPPED`.
 """
 function group(body, name::AbstractString, kernels...)
     gone = Kernels.missing_kernels(kernels...)
     if !isempty(gone)
         reason = "missing kernels: " * join(gone, ", ")
-        Kernels.REQUIRED && error("$name: $reason (ALLSPICE_REQUIRE_KERNELS=1)")
+        Kernels.REQUIRED && error("$name: $reason (ALMANAC_REQUIRE_KERNELS=1)")
         printstyled("SKIP  ", name, "  (", reason, ")\n"; color=:yellow, bold=true)
         push!(SKIPPED, (String(name), reason))
         return nothing
@@ -188,7 +188,7 @@ function oracle_load(paths)
     return nothing
 end
 
-"New explicit Allspice context with `paths` loaded in order."
+"New explicit Almanac context with `paths` loaded in order."
 function neo_context(paths)
     ctx = SpiceContext()
     for p in paths
@@ -265,12 +265,12 @@ function spk_bodies(path::AbstractString)
     return sort!(Int[i for i in ids])
 end
 
-"True if `f()` throws a `SpiceError` of Allspice with `kind`."
+"True if `f()` throws a `SpiceError` of Almanac with `kind`."
 function throws_kind(f, kind::Symbol)
     try
         f()
     catch e
-        e isa Allspice.SpiceError || rethrow()
+        e isa Almanac.SpiceError || rethrow()
         e.kind === kind || @info "SpiceError of another kind" expected = kind got = e.kind msg = e.msg
         return e.kind === kind
     end
@@ -292,7 +292,7 @@ end
 Write the subset `[t0, t1]` of the first segment of the SPK file `src` with `spksub`
 into `pn` and with `spksub_c` into `pc`, two new files of `dir`. `descr` maps the
 descriptor before the call. `kn` and `kc` are the error kinds, `:none` without one.
-CSPICE is not called when Allspice gives `:spkstructureerror` (`kc` is `:skipped`):
+CSPICE is not called when Almanac gives `:spkstructureerror` (`kc` is `:skipped`):
 for such a type 19 segment CSPICE N0067 reads `data[0]` in `spks19_` and aborts.
 """
 function spksub_both(src::AbstractString, dir::AbstractString, tag::AbstractString,
@@ -306,7 +306,7 @@ function spksub_both(src::AbstractString, dir::AbstractString, tag::AbstractStri
         spksub(h, descr(dafgs(h)), ident, t0, t1, nn)
         :none
     catch e
-        e isa Allspice.SpiceError || rethrow()
+        e isa Almanac.SpiceError || rethrow()
         e.kind
     end
     dafcls(nn)
@@ -362,7 +362,7 @@ const VEL_FLOOR = 1e-6
     compare_states(ctx, pairs, epochs, ref) -> NamedTuple
 
 Query every (target, observer) pair of `pairs` at every epoch of `epochs` in frame
-`ref` with Allspice (integer-ID form on `ctx`) and with CSPICE, and return the vectors
+`ref` with Almanac (integer-ID form on `ctx`) and with CSPICE, and return the vectors
 of absolute and relative component differences and of light-time differences.
 Precondition: CSPICE has the same kernels loaded as `ctx`.
 """

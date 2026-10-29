@@ -9,7 +9,7 @@ const CSPICE_VERSION = "CSPICE_N0067"
 
 Return the version string of the toolkit, as `tkvrsn_c`.
 
-For `item = "TOOLKIT"` the result is `"Allspice_v<package version>/CSPICE_N0067"`.
+For `item = "TOOLKIT"` the result is `"Almanac_v<package version>/CSPICE_N0067"`.
 The part after the slash is the CSPICE version whose behavior and file formats the
 package follows; `tkvrsn_c` gives that part alone. Letter case is ignored, and the
 symbol `:TOOLKIT` is accepted as in SPICE.jl. Any other item gives
@@ -23,7 +23,7 @@ true
 """
 function tkvrsn(item::Union{AbstractString,Symbol}="TOOLKIT")
     uppercase(strip(String(item))) == "TOOLKIT" || return "No version found."
-    return string("Allspice_v", pkgversion(@__MODULE__), "/", CSPICE_VERSION)
+    return string("Almanac_v", pkgversion(@__MODULE__), "/", CSPICE_VERSION)
 end
 
 # ---------------------------------------------------------------------------------------

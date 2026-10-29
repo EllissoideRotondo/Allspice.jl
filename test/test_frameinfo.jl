@@ -8,8 +8,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -30,7 +30,7 @@ function oracle_tkfram(id::Integer)
 end
 
 "`tkfram(ctx, id)`, or the kind of the `SpiceError` that it throws."
-neo_tkfram(ctx, id) = try tkfram(ctx, id) catch e; e isa Allspice.SpiceError ? e.kind : rethrow() end
+neo_tkfram(ctx, id) = try tkfram(ctx, id) catch e; e isa Almanac.SpiceError ? e.kind : rethrow() end
 
 group("19. frame information, body constants, local solar time", Kernels.FULL_SET_FILES...) do
     rng = MersenneTwister(SEED + 19)
@@ -187,7 +187,7 @@ group("19. frame information, body constants, local solar time", Kernels.FULL_SE
     set = [Kernels.full_set()..., CKFix.frame_kernel(), DynFix.frame_kernel()]
     oracle_load(set)
     ctx = neo_context(set)
-    ks = Allspice.kernelset(ctx)
+    ks = Almanac.kernelset(ctx)
 
     @apart @testset "tipbod and tisbod" begin
         dp = Float64[]; ds = Float64[]; dd = Float64[]

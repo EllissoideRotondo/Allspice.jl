@@ -5,7 +5,7 @@
 #
 #   1. CSPICE, for every query of the corpus: the error flag, the error message, the row
 #      count, and every value that the fetch calls return, in the order of CSPICE.
-#      Allspice is run in its compatibility mode here (`_ek_search(...; compat=true)`),
+#      Almanac is run in its compatibility mode here (`_ek_search(...; compat=true)`),
 #      which reproduces three defects of CSPICE that change results (see
 #      `src/ek/query_run.jl`); it must agree for every query.
 #   2. The model that the EK files were written from, for every generated query: the
@@ -20,14 +20,14 @@
 # The group `ek_parse` compares the encoded form and the message of every spelling and
 # of every syntax error with CSPICE. This group therefore has one spelling of each
 # comparison operator (the generator takes the spellings at random), and of the queries
-# that are not valid it has those whose error needs the table catalogue that Allspice
+# that are not valid it has those whose error needs the table catalogue that Almanac
 # reads from the files (names, data types, sizes, times), with a few syntax errors as
 # representatives of the path through `ekfind`.
 
 # The code of the EK groups is long and most of it runs once, so Julia compiles the
 # module of the tests without optimization while this file runs (5 s less for the five
 # EK groups); the last line of the file gives the default level back. The level of
-# Allspice does not change.
+# Almanac does not change.
 Base.Experimental.@optlevel 0
 
 isdefined(@__MODULE__, :EKLIB) || include("ekfixtures.jl")
@@ -200,7 +200,7 @@ end
 The double that the EK query language assigns to the number `text`. Contract: `text` is
 a number in the syntax of CSPICE `nparsd`; the result is the output of `nparsd_` of
 CSPICE (the routine that the scanner of queries calls, zzekscan.c line 900) and not of
-Allspice, so that the model stays independent of the code under test. `nparsd` does not
+Almanac, so that the model stays independent of the code under test. `nparsd` does not
 always give the correctly rounded double (it gives `nextfloat(2.756)` for "2.756"),
 thus `parse(Float64, text)` is not the value that a query compares with.
 """
@@ -626,7 +626,7 @@ const EK_HAND_QUERIES = [
 # ---------------------------------------------------------------------------------------
 
 """
-Run `query` in CSPICE and in Allspice (both modes). Returns a named tuple: `cerr`/`nerr`
+Run `query` in CSPICE and in Almanac (both modes). Returns a named tuple: `cerr`/`nerr`
 the error flags, `msgsame`, `nc` the row count of CSPICE, `compat` true if the
 compatibility mode gives the count and every value of CSPICE in the same order (or both
 engines give the same error and message), `default` the same for the public `ekfind`,
@@ -636,14 +636,14 @@ engines give the same error and message), `default` the same for the public `ekf
 function ek_compare_query(ctx, query::String)
     signal = c_kind(() -> c_ekfind(query))
     if signal !== nothing
-        # CSPICE signals an error (it does not set the error flag): Allspice throws the same kind.
+        # CSPICE signals an error (it does not set the error flag): Almanac throws the same kind.
         same = neo_kind(() -> ekfind(ctx, query)) === signal
         return (cerr=true, nerr=true, msgsame=same, nc=0, compat=same, default=same, sameset=same, nd=0,
             values=Vector{Any}[], cmsg=string(signal), nmsg="", signal=signal)
     end
     nc, cerr, cmsg = c_ekfind(query)
-    ks = Allspice.kernelset(ctx)
-    eq, nerr, nmsg = Allspice._ek_encode_query(ks.ektables, ks, Allspice.timedefaults(ctx), query)
+    ks = Almanac.kernelset(ctx)
+    eq, nerr, nmsg = Almanac._ek_encode_query(ks.ektables, ks, Almanac.timedefaults(ctx), query)
     res, derr, dmsg = ekfind(ctx, query)
     @assert derr == nerr && dmsg == nmsg
     if cerr || nerr
@@ -651,7 +651,7 @@ function ek_compare_query(ctx, query::String)
         return (cerr=cerr, nerr=nerr, msgsame=cmsg == nmsg, nc=nc, compat=same, default=same, sameset=same,
             nd=res.nmrows, values=Vector{Any}[], cmsg=cmsg, nmsg=nmsg, signal=nothing)
     end
-    rc = Allspice._ek_search(ks, eq; compat=true)
+    rc = Almanac._ek_search(ks, eq; compat=true)
     cvals = c_ek_result(nc, rc.seltype)
     compat = rc.nmrows == nc && neo_ek_result(rc) == cvals
     dvals = neo_ek_result(res)
@@ -735,7 +735,7 @@ group("EK queries: catalogue, query corpus against CSPICE and against the model"
 
     ek_part("ekpsel: the SELECT clause") do
         # `ek_parse` compares the analysis of every query of its corpus with `ekpsel_c`;
-        # here: the public call on the catalogue of Allspice, one valid query with every
+        # here: the public call on the catalogue of Almanac, one valid query with every
         # data type, an array column, an alias and a table name, and one error.
         for q in ["select  e.id ,g.gname, G.T0, EVENTS.VAL, ivec  from events e, groups g where e.grp = g.gid order by e.id",
             "SELECT FOO FROM EVENTS"]
@@ -778,9 +778,9 @@ group("EK queries: catalogue, query corpus against CSPICE and against the model"
         s[5] += r.cerr
         if !r.compat
             println("  differs from CSPICE in compatibility mode: ", q, "\n     CSPICE: ", r.nc, " rows",
-                r.cerr ? " error " * r.cmsg : "", "; Allspice: ", r.nerr ? "error " * r.nmsg : "$(r.nd) rows in correct mode")
+                r.cerr ? " error " * r.cmsg : "", "; Almanac: ", r.nerr ? "error " * r.nmsg : "$(r.nd) rows in correct mode")
         elseif !r.default && length(examples) < 8
-            push!(examples, "    $q\n      CSPICE $(r.nc) rows, Allspice $(r.nd) rows" *
+            push!(examples, "    $q\n      CSPICE $(r.nc) rows, Almanac $(r.nd) rows" *
                 (r.sameset ? " (same rows, other order)" : ""))
         end
         return nothing
@@ -818,7 +818,7 @@ group("EK queries: catalogue, query corpus against CSPICE and against the model"
             if !ok
                 badmodel += 1
                 badmodel <= 5 && println("  differs from the model: ", g.text, "\n     model ", length(expect),
-                    " rows, Allspice ", r.nd, " rows, CSPICE ", r.nc, " rows")
+                    " rows, Almanac ", r.nd, " rows, CSPICE ", r.nc, " rows")
             end
         end
         @test badmodel == 0
@@ -867,21 +867,21 @@ group("EK queries: catalogue, query corpus against CSPICE and against the model"
         # mode keeps the value of CSPICE. Seed 777 has such a row.
         x = ekq_number("2.756")
         @test x === nextfloat(2.756)
-        @test Allspice._nparsd("2.756") === x
-        @test Allspice._ek_qexact(codeunits("2.756"), x) === 2.756
-        @test Allspice._ek_qexact(codeunits("2.756D0"), x) === 2.756
-        @test Allspice._ek_qexact(codeunits("17"), 17.0) === 17.0
-        ks = Allspice.kernelset(ctx)
+        @test Almanac._nparsd("2.756") === x
+        @test Almanac._ek_qexact(codeunits("2.756"), x) === 2.756
+        @test Almanac._ek_qexact(codeunits("2.756D0"), x) === 2.756
+        @test Almanac._ek_qexact(codeunits("17"), 17.0) === 17.0
+        ks = Almanac.kernelset(ctx)
         vcol = findfirst(c -> c.name == "VAL", events.cols)
         vals = Float64[r[vcol][1] for r in events.rows if r[vcol] !== nothing]
         for (op, f) in (("=", ==), (">=", >=), (">", >))
             q = "SELECT ID FROM EVENTS WHERE VAL $op 2.756"
-            eq, err, _ = Allspice._ek_encode_query(ks.ektables, ks, Allspice.timedefaults(ctx), q)
+            eq, err, _ = Almanac._ek_encode_query(ks.ektables, ks, Almanac.timedefaults(ctx), q)
             @test !err
             con = only(eq.constraints)
             @test con.dval === x && con.dexact === 2.756
             @test ekfind(ctx, q)[1].nmrows == count(v -> f(v, 2.756), vals)
-            @test Allspice._ek_search(ks, eq; compat=true).nmrows == count(v -> f(v, x), vals) == c_ekfind(q)[1]
+            @test Almanac._ek_search(ks, eq; compat=true).nmrows == count(v -> f(v, x), vals) == c_ekfind(q)[1]
         end
     end
 

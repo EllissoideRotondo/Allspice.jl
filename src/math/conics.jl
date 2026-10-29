@@ -44,7 +44,7 @@ motion about a mass with the gravitational parameter `gm`, as `prop2b_c` of CSPI
 
 The units must be consistent, for example km, km/s, seconds and km³/s². `gm` and
 `pvinit` are converted to `Float64`. `dt` can be a `ForwardDiff.Dual` or an
-`Allspice.Taylor` number (the truncated Taylor series of [`spkder`](@ref)); the result
+`Almanac.Taylor` number (the truncated Taylor series of [`spkder`](@ref)); the result
 then holds the derivatives with respect to `dt`.
 
 Throws:
@@ -104,7 +104,7 @@ Return the state at the epoch `et` of a body on the conic orbit with the element
 
 The units must be consistent, for example km, seconds past J2000 TDB for `et` and `t0`,
 and km³/s². The elements are converted to `Float64`. `et` can be a `ForwardDiff.Dual`
-or an `Allspice.Taylor` number (the truncated Taylor series of [`spkder`](@ref)).
+or an `Almanac.Taylor` number (the truncated Taylor series of [`spkder`](@ref)).
 
 Throws:
 - `SpiceError(:badeccentricity)` if `ecc < 0`.
@@ -348,7 +348,7 @@ and the declination `decpol` (rad), given in the frame of the result. The x axis
 that equator, from which the longitudes count, is at the right ascension
 `rapol + pi/2`. This is the model of SPK type 17. The result is in km and km/s. The
 arguments other than `et` are converted to `Float64`; `et` can be a `ForwardDiff.Dual`
-or an `Allspice.Taylor` number (the truncated Taylor series of [`spkder`](@ref)).
+or an `Almanac.Taylor` number (the truncated Taylor series of [`spkder`](@ref)).
 A zero mean longitude rate gives a velocity of NaN, as in CSPICE.
 
 Throws `SpiceError`:

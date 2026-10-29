@@ -1,7 +1,7 @@
 # Group 18: kernel-pool edits, the read calls that go with them, and the watchers,
 # against CSPICE.
 #
-# The same sequence of operations runs on CSPICE and on a Allspice context; after each
+# The same sequence of operations runs on CSPICE and on a Almanac context; after each
 # step the whole pool is compared (names, types, values). This fixes the rule for
 # edits and the load list: an edit stays through `furnsh` and through the `unload` of a
 # binary kernel, and is lost with the `unload` of a text kernel and with `kclear`.
@@ -13,8 +13,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -75,7 +75,7 @@ function pw_kernel(name::AbstractString, lines)
     return path
 end
 
-"Run the same operation on CSPICE (`fo`) and on Allspice (`fn`)."
+"Run the same operation on CSPICE (`fo`) and on Almanac (`fn`)."
 pw_both(fo, fn) = (fo(); fn(); nothing)
 
 group("18. kernel-pool edits and watchers against CSPICE", Kernels.LSK, Kernels.PCK11,
@@ -208,7 +208,7 @@ group("18. kernel-pool edits and watchers against CSPICE", Kernels.LSK, Kernels.
                 x = ["$v = ( $(rand(rng, 1:9)), $(rand(rng, 1:9)) )", "$(rand(rng, vars)) += $(rand(rng, 1:9))"]
                 # `+=` on a character variable with a number is an error in both engines.
                 ok = try SPICE.lmpool(x); true catch e; e isa SPICE.SpiceError || rethrow(); false end
-                okn = try lmpool(ctx, x); true catch e; e isa Allspice.SpiceError || rethrow(); false end
+                okn = try lmpool(ctx, x); true catch e; e isa Almanac.SpiceError || rethrow(); false end
                 ok == okn || (nbad += 1)
                 (ok && okn) || (SPICE.kclear(); kclear(ctx); empty!(loaded))
             elseif op === :furnsh
@@ -239,7 +239,7 @@ group("18. kernel-pool edits and watchers against CSPICE", Kernels.LSK, Kernels.
         set = [Kernels.LSK, Kernels.PCK11, Kernels.MOON_TF, ka]
         oracle_load(set)
         ctx = neo_context(set)
-        ks = Allspice.kernelset(ctx)
+        ks = Almanac.kernelset(ctx)
         long = ["PW_LONG = ( 'first part //', 'second part //', 'end.', 'alone', 'x //', 'y' )",
             "PW_MARK = ( 'a -', 'b -', 'c', 'd' )", "PW_NUM = ( 1, 2 )"]
         pw_both(() -> SPICE.lmpool(long), () -> lmpool(ctx, long))
@@ -356,7 +356,7 @@ group("18. kernel-pool edits and watchers against CSPICE", Kernels.LSK, Kernels.
         other = neo_context(set)
         @test pxform(other, "J2000", "IAU_EARTH", et) == before
         @test namfrm(other, "PW_TK") == 0
-        @test_throws MethodError pdpool(Allspice.kernelset(ctx), "X", [1.0])
+        @test_throws MethodError pdpool(Almanac.kernelset(ctx), "X", [1.0])
     end
 
     @apart @testset "boddef" begin
@@ -507,7 +507,7 @@ group("18. kernel-pool edits and watchers against CSPICE", Kernels.LSK, Kernels.
                     while !stop[]
                         # A writer always stores equal values: a mixture is a torn read.
                         for w in 1:nwriters
-                            ks = Allspice.kernelset(ctx)
+                            ks = Almanac.kernelset(ctx)
                             expool(ks, "PW_THREAD_$w") || continue
                             x = gdpool(ks, "PW_THREAD_$w")
                             all(==(x[1]), x) || Threads.atomic_add!(torn, 1)

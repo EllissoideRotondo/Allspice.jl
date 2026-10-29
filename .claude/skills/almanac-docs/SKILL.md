@@ -1,11 +1,11 @@
 ---
-name: allspice-docs
-description: Use when writing or changing the README, a docstring or a manual page of Allspice.jl, or when adding or renaming an exported name; the rules of this repository on top of the global julia-docstrings, julia-manual, julia-readme and julia-doc-reader-review skills.
+name: almanac-docs
+description: Use when writing or changing the README, a docstring or a manual page of Almanac.jl, or when adding or renaming an exported name; the rules of this repository on top of the global julia-docstrings, julia-manual, julia-readme and julia-doc-reader-review skills.
 ---
 
-# Allspice documentation rules
+# Almanac documentation rules
 
-The general rules (prose registers, docstring form, README content, reader review) are in the global skills `julia-docstrings`, `julia-manual`, `julia-readme` and `julia-doc-reader-review`. This file holds only what is particular to Allspice.jl.
+The general rules (prose registers, docstring form, README content, reader review) are in the global skills `julia-docstrings`, `julia-manual`, `julia-readme` and `julia-doc-reader-review`. This file holds only what is particular to Almanac.jl.
 
 ## Where a fact lives
 
@@ -63,14 +63,14 @@ The largest source of false statements in the old docstrings was "as `other`": a
 ## Examples
 
 - `jldoctest` when the example needs no kernel file that it does not write itself and its output is stable. Three ways to need no kernel file: pure mathematics; a fresh `SpiceContext()` filled with `pdpool`, `pcpool`, `lmpool` or `boddef`; a file that the example writes into `mktempdir()` (end that line with `;` so that no path is printed). Never use the default context in a doctest, because all doctests share it.
-- The doctest module has only `using Allspice`, so a displayed `SVector` prints with a long header. Show a comparison (`f(x) == [1, 2, 3]`, `≈` for rounded values), a tuple, or `round.(x; digits=6)`. Prefer inputs with exact results. A value that two code paths compute can differ in the last bit: compare with `≈`.
+- The doctest module has only `using Almanac`, so a displayed `SVector` prints with a long header. Show a comparison (`f(x) == [1, 2, 3]`, `≈` for rounded values), a tuple, or `round.(x; digits=6)`. Prefer inputs with exact results. A value that two code paths compute can differ in the last bit: compare with `≈`.
 - Write the expected output from a scratch run. Never use `doctest(...; fix=true)`: it turns a failing `== ... true` into a passing `false`.
 - An example that needs real kernels is a plain `julia` block without output values. Run it once: against real kernels if the machine has them (use bodies that the named kernel holds), or against `docs/fixture.jl` with `PROBE`, `EARTH` and `SUN` substituted.
 - No `$` and no backslash in a docstring that is not `raw`; write units as `km³/s²`. Do not name a variable `first`, `last` or `error`.
 
 ## Private functions
 
-A private function keeps a docstring only when it states something the code and the name do not: a non-obvious precondition, an invariant, a unit, an arithmetic rule of f2c, a known difference from CSPICE. "Follows the CSPICE routine X" is a reason only when the name does not already say it; where a file maps names by one rule (`_ekw_<name>` ports `zzek<name>`), state the rule once in the file header. A one-line docstring on a private constant becomes a trailing `#` comment or goes. Executable checks (`@assert`) stay. A name that is public but not exported (`Allspice.det`) gets the public form.
+A private function keeps a docstring only when it states something the code and the name do not: a non-obvious precondition, an invariant, a unit, an arithmetic rule of f2c, a known difference from CSPICE. "Follows the CSPICE routine X" is a reason only when the name does not already say it; where a file maps names by one rule (`_ekw_<name>` ports `zzek<name>`), state the rule once in the file header. A one-line docstring on a private constant becomes a trailing `#` comment or goes. Executable checks (`@assert`) stay. A name that is public but not exported (`Almanac.det`) gets the public form.
 
 ## Manual
 

@@ -1,9 +1,9 @@
-# Allspice.jl
+# Almanac.jl
 
-[![CI](https://github.com/Orbitology/Allspice.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/Orbitology/Allspice.jl/actions/workflows/CI.yml)
-[![Manual](https://img.shields.io/badge/docs-dev-blue.svg)](https://orbitology.github.io/Allspice.jl/dev/)
+[![CI](https://github.com/Orbitology/Almanac.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/Orbitology/Almanac.jl/actions/workflows/CI.yml)
+[![Manual](https://img.shields.io/badge/docs-dev-blue.svg)](https://orbitology.github.io/Almanac.jl/dev/)
 
-Allspice.jl is a native Julia port of CSPICE N0067 for the computation of spacecraft
+Almanac.jl is a native Julia port of CSPICE N0067 for the computation of spacecraft
 and planetary geometry. It reads the data files of
 [SPICE](https://naif.jpl.nasa.gov/naif/), called kernels, which NASA's Navigation and
 Ancillary Information Facility (NAIF) publishes, and performs the position,
@@ -25,16 +25,16 @@ Features include:
 - Event searches, surface geometry, and the writing of SPK, CK, binary PCK, DSK and EK
   kernels.
 
-Allspice.jl is meant for programs that need SPICE geometry as native Julia code. A
+Almanac.jl is meant for programs that need SPICE geometry as native Julia code. A
 program that must call the CSPICE library of NAIF itself is better served by a
 wrapper such as SPICE.jl.
 
 ## Installation
 
-Allspice.jl requires Julia 1.10 or later. Install it directly from GitHub:
+Almanac.jl requires Julia 1.10 or later. Install it directly from GitHub:
 
 ```julia-repl
-pkg> add https://github.com/Orbitology/Allspice.jl
+pkg> add https://github.com/Orbitology/Almanac.jl
 ```
 
 ## Quick start
@@ -49,7 +49,7 @@ paths. The last file holds the orientation and the radii of the Sun, the planets
 their satellites, which body-fixed frames such as `IAU_EARTH` need.
 
 ```julia
-using Allspice
+using Almanac
 
 furnsh("naif0012.tls")    # leap seconds
 furnsh("de440s.bsp")      # planets, Moon and Sun
@@ -64,8 +64,8 @@ light_time             # one-way light time, s
 ```
 
 `spkezr` returns the state of the Moon relative to the Earth after light-time and
-stellar-aberration corrections. Allspice.jl returns Julia values instead of filling
-C output arguments, uses indices that start at 1, and throws [`SpiceError`](https://orbitology.github.io/Allspice.jl/dev/reference/kernels/#Allspice.SpiceError)
+stellar-aberration corrections. Almanac.jl returns Julia values instead of filling
+C output arguments, uses indices that start at 1, and throws [`SpiceError`](https://orbitology.github.io/Almanac.jl/dev/reference/kernels/#Almanac.SpiceError)
 when a call cannot produce a result.
 
 The package [SPICEKernels.jl](https://github.com/JuliaAstro/EphemerisSources.jl/tree/main/lib/SPICEKernels)
@@ -82,20 +82,20 @@ furnsh(pck00011())
 
 ## Limits
 
-- Allspice.jl is a prototype. Its interface can still change.
-- It ports the library calls of CSPICE N0067. Utilities that Julia Base covers (cells, sets, strings, error handling) and the toolkit programs are not ported; the [differences from CSPICE](https://orbitology.github.io/Allspice.jl/dev/explanation/cspice/#What-is-absent) name the call to use in place of each.
-- A result is the result that CSPICE gives in a new process, to rounding. The measured differences are in [coverage and validation](https://orbitology.github.io/Allspice.jl/dev/explanation/coverage/#Known-limits-of-accuracy).
+- Almanac.jl is a prototype. Its interface can still change.
+- It ports the library calls of CSPICE N0067. Utilities that Julia Base covers (cells, sets, strings, error handling) and the toolkit programs are not ported; the [differences from CSPICE](https://orbitology.github.io/Almanac.jl/dev/explanation/cspice/#What-is-absent) name the call to use in place of each.
+- A result is the result that CSPICE gives in a new process, to rounding. The measured differences are in [coverage and validation](https://orbitology.github.io/Almanac.jl/dev/explanation/coverage/#Known-limits-of-accuracy).
 
 ## Tutorials and Documentation
 
-The [manual](https://orbitology.github.io/Allspice.jl/dev/) starts with a first session
+The [manual](https://orbitology.github.io/Almanac.jl/dev/) starts with a first session
 that goes from loading kernels to an event search, and continues with how-to guides,
 concept pages and the API reference; before a program written for CSPICE or SPICE.jl is
-ported, read the [differences from CSPICE](https://orbitology.github.io/Allspice.jl/dev/explanation/cspice/).
+ported, read the [differences from CSPICE](https://orbitology.github.io/Almanac.jl/dev/explanation/cspice/).
 
 ## Relationship to NAIF
 
-Allspice.jl is an independent project that NAIF and the Jet Propulsion Laboratory
+Almanac.jl is an independent project that NAIF and the Jet Propulsion Laboratory
 do not develop, support, or endorse. Report defects through this repository, not to
 NAIF. The repository does not redistribute CSPICE or SPICE kernels; CSPICE remains
 available from [NAIF](https://naif.jpl.nasa.gov/naif/toolkit.html) under its [rules
@@ -112,7 +112,7 @@ Publications that use SPICE should cite the references requested by NAIF:
 ## Contributing
 
 Report defects and ask questions in the
-[issues of the repository](https://github.com/Orbitology/Allspice.jl/issues). Run the
+[issues of the repository](https://github.com/Orbitology/Almanac.jl/issues). Run the
 tests from the repository root, on 8 processes:
 
 ```sh
@@ -128,5 +128,5 @@ julia --project=docs docs/make.jl
 
 ## License
 
-Allspice.jl is available under the [MIT license](LICENSE). This license covers only
+Almanac.jl is available under the [MIT license](LICENSE). This license covers only
 the work in this repository and grants no rights over CSPICE.

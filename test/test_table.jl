@@ -6,13 +6,13 @@
 #     kernels, so the position agrees to a few units of rounding (measured 6e-16
 #     relative) and the velocity to rounding times degree^2 (measured 8e-13);
 #   interpolation: the position agrees within `maxerr` of the table plus the
-#     difference between Allspice and CSPICE.
+#     difference between Almanac and CSPICE.
 
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -92,7 +92,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         @test throws_kind(() -> ephemeris_table(ctx, 301, t0, t1, "J2000", "BAD", 399), :invalidoption)
         @test_throws SpiceError ephemeris_table(ctx, 301, t0, 1e11, "J2000", "NONE", 399)
         @test_throws SpiceError ephemeris_table(ctx, 499, t0, t1, "J2000", "NONE", 399)
-        @test throws_kind(() -> Allspice.EphemerisTable(zeros(5), 0.0, 1.0, 1, 2, 1, 2, 1, 0.0), :badarg)
+        @test throws_kind(() -> Almanac.EphemerisTable(zeros(5), 0.0, 1.0, 1, 2, 1, 2, 1, 0.0), :badarg)
         tab = ephemeris_table(ctx, 301, t0, t1, "J2000", "NONE", 399)
         lo, hi = table_span(tab)
         @test throws_kind(() -> table_position(tab, lo - 1.0), :spkinsuffdata)
@@ -119,7 +119,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         table_alloc(tab, et)
         @test table_alloc(tab, et) == 0
 
-        single = Allspice.EphemerisTable{Float32}(tab)
+        single = Almanac.EphemerisTable{Float32}(tab)
         @test single.coef isa Vector{Float32} && table_span(single) == table_span(tab)
         @test table_position(single, et) isa SVector{3,Float32}
         @test rel(table_position(single, et), jet[1]) <= 1e-5
@@ -128,7 +128,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         @test moved.coef isa Vector{Float32} && moved.coef == single.coef
         @test (moved.t0, moved.dt, moved.nint, moved.ncoef, moved.maxerr) ==
               (tab.t0, tab.dt, tab.nint, tab.ncoef, tab.maxerr)
-        small = Allspice.EphemerisTable(SVector{6,Float64}(1, 2, 3, 4, 5, 6), 0.0, 2.0, 1, 2, 1, 2, 1, 0.0)
+        small = Almanac.EphemerisTable(SVector{6,Float64}(1, 2, 3, 4, 5, 6), 0.0, 2.0, 1, 2, 1, 2, 1, 0.0)
         @test isbits(small) && table_position(small, 1.5) == SVector(2.0, 5.0, 8.0)
     end
 
@@ -143,7 +143,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         @test throws_kind(() -> table_to_spk(ctx, h, fit, "x"; first=t0 - 10.0), :coveragegap)
         # Regression: table_to_spk wrote a frame ID that no context knows into the segment;
         # spkw02_c signals SPICE(INVALIDREFFRAME) for a frame that it cannot resolve.
-        unknown = Allspice.EphemerisTable(fit.coef, fit.t0, fit.dt, fit.nint, fit.ncoef,
+        unknown = Almanac.EphemerisTable(fit.coef, fit.t0, fit.dt, fit.nint, fit.ncoef,
             fit.target, fit.observer, -999, fit.maxerr)
         hc = SPICE.spkopn(joinpath(dir, "table_c.bsp"), "TABLE", 0)
         ccall((:spkw02_c, SPICE.libcspice), Cvoid, (Cint, Cint, Cint, Cstring, Cdouble, Cdouble,
@@ -158,7 +158,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         # A second file: the Earth from the Moon in the same file would close a loop of bodies.
         p2 = joinpath(dir, "table2.bsp")
         h2 = spkopn(p2, "TABLE", 0)
-        table_to_spk(ctx, h2, Allspice.EphemerisTable{Float32}(fit), "earth, single precision")
+        table_to_spk(ctx, h2, Almanac.EphemerisTable{Float32}(fit), "earth, single precision")
         spkcls(h2)
         own = neo_context([p])
         SPICE.kclear(); SPICE.furnsh(Kernels.LSK); SPICE.furnsh(p)
@@ -172,12 +172,12 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         measured(@sprintf("  table as SPK type 2: position %.1e, velocity %.1e against the table; %.1e against CSPICE on the file", ep, ev, ec))
         @test ep <= 5e-15 && ev <= 1e-11 && ec <= 1e-13
         # The segment keeps the bodies, the frame and the span of the table.
-        seg = only(Allspice.kernelset(own).spk[Int32(301)])
+        seg = only(Almanac.kernelset(own).spk[Int32(301)])
         @test (seg.center, seg.dtype, seg.t0, seg.t1) == (399, 2, lo, hi)
         own2 = neo_context([p2])
-        seg2 = only(Allspice.kernelset(own2).spk[Int32(399)])
+        seg2 = only(Almanac.kernelset(own2).spk[Int32(399)])
         @test (seg2.center, seg2.frame, seg2.dtype) == (301, fit.frame, 2)
-        d = Allspice.kernelset(own2).daf[seg2.file]
+        d = Almanac.kernelset(own2).daf[seg2.file]
         @test d[seg2.baddr:seg2.baddr+3*fit.ncoef+1][3:end] == Float64.(Float32.(fit.coef[1:3*fit.ncoef]))
         oracle_load(set)
     end
@@ -215,7 +215,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         rot_alloc(tb, t) = @allocated table_rotation_jet(tb, t, Val(1))
         rot_alloc(tab, et)
         @test rot_alloc(tab, et) == 0
-        single = Allspice.RotationTable{Float32}(tab)
+        single = Almanac.RotationTable{Float32}(tab)
         @test table_rotation(single, et) isa SMatrix{3,3,Float32,9}
         @test frob(table_rotation(single, et), jet[1]) <= 1e-5
         moved = Adapt.adapt(ToFloat32(), tab)
@@ -228,7 +228,7 @@ group("ephemeris table", Kernels.FULL_SET_FILES...) do
         @test throws_kind(() -> rotation_table(ctx, "J2000", "IAU_EARTH", r0, r1; tol=-1.0), :badarg)
         @test throws_kind(() -> rotation_table(ctx, "J2000", "IAU_EARTH", r0, r1; maxintervals=0), :badarg)
         @test throws_kind(() -> rotation_table(ctx, "J2000", "IAU_EARTH", r0, r1; tol=1e-15, maxintervals=8), :noconvergence)
-        @test throws_kind(() -> Allspice.RotationTable(zeros(5), 0.0, 1.0, 1, 2, 1, 2, 0.0), :badarg)
+        @test throws_kind(() -> Almanac.RotationTable(zeros(5), 0.0, 1.0, 1, 2, 1, 2, 0.0), :badarg)
         @test_throws SpiceError rotation_table(ctx, "J2000", "NO_SUCH_FRAME", r0, r1)
     end
 end

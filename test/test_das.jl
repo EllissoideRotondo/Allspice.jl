@@ -1,12 +1,12 @@
 # Group 11: DAS files and the DLA segment list.
 #
 # CSPICE is the oracle. No DAS file is needed on the machine: the group makes its files
-# with the CSPICE writers and with the Allspice writers in a temporary directory, and
+# with the CSPICE writers and with the Almanac writers in a temporary directory, and
 # each engine reads the files of the other.
 #
 #   (a) a DSK file that CSPICE wrote: file record, summary, comments, and every integer,
 #       double and character, read with both engines;
-#   (b) a generic DAS file that Allspice wrote, read with CSPICE;
+#   (b) a generic DAS file that Almanac wrote, read with CSPICE;
 #   (c) updates and comment changes through `dasopw`;
 #   (d) a file that is not segregated (CSPICE closes it with `daswbr_`, `dasllc_`);
 #   (e) files of the other byte order, made in the test by a byte swap of each record;
@@ -16,8 +16,8 @@
 # Compile time. In the default run the test code of this group is compiled without
 # optimization (`@optlevel 0` for `Main`, until the end of this file), because the
 # compilation of the test code is the larger part of the run time of the group. The
-# methods of Allspice keep their own optimization level, except where the compiler
-# inlines one into test code. The exhaustive run (`ALLSPICE_TEST_FULL=1`) is not changed.
+# methods of Almanac keep their own optimization level, except where the compiler
+# inlines one into test code. The exhaustive run (`ALMANAC_TEST_FULL=1`) is not changed.
 FULL || @eval Base.Experimental.@optlevel 0
 isdefined(@__MODULE__, Symbol("@apart")) || include("apart.jl")
 
@@ -50,7 +50,7 @@ end
 Copy of the native DAS file `src` in the other byte order at `dst`: the integers of the
 file record, every directory record and every integer and double data record are
 swapped, and the format string names the other order. The directory chain is followed
-in the test, without Allspice.
+in the test, without Almanac.
 """
 function byteswapped_das(src, dst)
     raw = read(src)
@@ -130,10 +130,10 @@ group("11. DAS files and DLA segment lists") do
         @test !isopen(h)
         dascls(h)                        # a second close does nothing
         @test getfat(cfile) == ("DAS", "DSK") == SPICE.getfat(cfile)
-        @test Allspice.kernel_arch(cfile) === :DSK
+        @test Almanac.kernel_arch(cfile) === :DSK
     end
 
-    @apart @testset "(b) a generic DAS file that Allspice wrote" begin
+    @apart @testset "(b) a generic DAS file that Almanac wrote" begin
         path = joinpath(dir, "generic.das")
         h = dasonw(path, "TEST", "generic file", 2)
         @test isfile(path)
@@ -212,7 +212,7 @@ group("11. DAS files and DLA segment lists") do
         ch = c_dasopr(path)
         @test SPICE.dasec(ch) == vcat(rstrip.(comments), "one more line")
         c_dascls(ch)
-        # CSPICE changes the file; Allspice reads the change. Then the comments are deleted.
+        # CSPICE changes the file; Almanac reads the change. Then the comments are deleted.
         ch = c_dasopw(path)
         SPICE.dasac(ch, ["from CSPICE"])
         c_dascls(ch)
